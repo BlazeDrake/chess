@@ -13,6 +13,7 @@ public class ChessPiece {
 
     private ChessGame.TeamColor pieceColor;
     private PieceType type;
+
     private ChessPosition pos;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
@@ -74,6 +75,13 @@ public class ChessPiece {
      */
     public PieceType getPieceType() {
         throw new RuntimeException("Not implemented");
+    }
+
+    /**
+     * @return the current position of this piece
+     */
+    public ChessPosition getPos() {
+        return pos;
     }
 
     /**
