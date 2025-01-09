@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -10,7 +11,43 @@ import java.util.Collection;
  */
 public class ChessPiece {
 
+    private ChessGame.TeamColor pieceColor;
+    private PieceType type;
+    private ChessPosition pos;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.pieceColor=pieceColor;
+        this.type=type;
+        this.pos=null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type && Objects.equals(pos, that.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type, pos);
+    }
+
+    @Override
+    public String toString(){
+        String pieceInfo=pieceColor+" "+type+"; ";
+        if(pos!=null){
+            pieceInfo+= "at "+pos.toString();
+        }
+        else{
+            pieceInfo+=" not placed";
+        }
+        return pieceInfo;
     }
 
     /**
