@@ -85,6 +85,14 @@ public class ChessPiece {
     }
 
     /**
+     *
+     * @param pos the position to set this chess piece to
+     */
+    public void setPos(ChessPosition pos){
+        this.pos=pos;
+    }
+
+    /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
      * danger

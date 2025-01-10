@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -11,11 +12,19 @@ import java.util.ArrayList;
 public class ChessBoard {
 
     private ArrayList<ChessPiece> pieces;
-    //2d array to store all positions
+    //2d array to store all positions. Form of (row, col). (1,1) bottom left, (8,8) top right
     private ChessPosition[][] positions=new ChessPosition[8][8];
 
     public ChessBoard() {
-
+        //Set up the positions
+        for(int i=0;i<8;i++){
+            for(int j=0;j<8;j++){
+                positions[i][j]=new ChessPosition(i+1,j+1);
+            }
+        }
+        //Set up the pieces
+        pieces=new ArrayList<>();
+        resetBoard();
     }
 
     /**
@@ -25,7 +34,8 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        pieces.add(piece);
+        piece.setPos(position);
     }
 
     /**
@@ -36,7 +46,12 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        for(var piece: pieces){
+            if(position.equals(piece.getPos())){
+                return piece;
+            }
+        }
+        return null;
     }
 
     /**
@@ -44,6 +59,9 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        pieces.clear();
+
+        //pawns
+        //The rest
     }
 }
