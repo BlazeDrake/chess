@@ -63,6 +63,47 @@ public class ChessBoard {
         pieces.clear();
 
         //pawns
+        for(int i=1;i<=8;i++){
+            addPiece(new ChessPosition(2,i),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(7,i),new ChessPiece(ChessGame.TeamColor.BLACK,ChessPiece.PieceType.PAWN));
+        }
         //The rest
+        System.out.println(this);
+    }
+    public String toString(){
+        StringBuilder output= new StringBuilder();
+        for(int i=1;i<=8;i++){
+            for(int j=1;j<=8;j++){
+                var piece=getPiece(new ChessPosition(i,j));
+                if(piece==null){
+                    output.append("_");
+                }
+                else if(piece.getTeamColor()== ChessGame.TeamColor.WHITE){
+                    output.append(switch(piece.getPieceType()){
+                        case KING -> "K";
+                        case PAWN -> "P";
+                        case KNIGHT -> "N";
+                        case ROOK -> "R";
+                        case QUEEN -> "Q";
+                        case BISHOP -> "B";
+                        default -> "_";
+                    });
+                }
+                //Piece is black
+                else{
+                    output.append(switch(piece.getPieceType()){
+                        case KING -> "k";
+                        case PAWN -> "p";
+                        case KNIGHT -> "n";
+                        case ROOK -> "r";
+                        case QUEEN -> "q";
+                        case BISHOP -> "b";
+                        default -> "_";
+                    });
+                }
+            }
+            output.append("\n");
+        }
+        return output.toString();
     }
 }
