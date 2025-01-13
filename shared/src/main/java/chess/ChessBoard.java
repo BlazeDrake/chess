@@ -11,6 +11,7 @@ import java.util.HashMap;
  */
 public class ChessBoard {
 
+    //FIXME: consider using a dict. This will make removing pieces O(n), but will make finding piece by position, which is more often, O(1)
     private ArrayList<ChessPiece> pieces;
     //2d array to store all positions. Form of (row, col). (1,1) bottom left, (8,8) top right
     private ChessPosition[][] positions=new ChessPosition[8][8];
