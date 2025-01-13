@@ -40,6 +40,22 @@ public class ChessBoard {
     }
 
     /**
+     * Adds 4 copies of pieces that are repeated to the board. Used for resetting the board only
+     * @param col the column on the right to add the piece to (must not be larger than 4)
+     * @param piece the type of piece to add
+     */
+    private void addQuadruplePiece(int col, ChessPiece.PieceType piece){
+        //sanitize data
+        if(col>4){
+            col=8-col;
+        }
+        addPiece(new ChessPosition(1,col),new ChessPiece(ChessGame.TeamColor.WHITE,piece));
+        addPiece(new ChessPosition(1,9-col),new ChessPiece(ChessGame.TeamColor.WHITE,piece));
+        addPiece(new ChessPosition(8,col),new ChessPiece(ChessGame.TeamColor.BLACK,piece));
+        addPiece(new ChessPosition(8,9-col),new ChessPiece(ChessGame.TeamColor.BLACK,piece));
+    }
+
+    /**
      * Gets a chess piece on the chessboard
      *
      * @param position The position to get the piece from
@@ -67,12 +83,22 @@ public class ChessBoard {
             addPiece(new ChessPosition(2,i),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.PAWN));
             addPiece(new ChessPosition(7,i),new ChessPiece(ChessGame.TeamColor.BLACK,ChessPiece.PieceType.PAWN));
         }
-        //The rest
-        System.out.println(this);
+        //all other pieces
+        addQuadruplePiece(1, ChessPiece.PieceType.ROOK);
+        addQuadruplePiece(2, ChessPiece.PieceType.KNIGHT);
+        addQuadruplePiece(3, ChessPiece.PieceType.BISHOP);
+
+        addPiece(new ChessPosition(1,4),new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN));
+        addPiece(new ChessPosition(1,5),new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
+
+        addPiece(new ChessPosition(8,4),new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
+        addPiece(new ChessPosition(8,5),new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
+
+        //System.out.println(this);
     }
     public String toString(){
         StringBuilder output= new StringBuilder();
-        for(int i=1;i<=8;i++){
+        for(int i=8;i>=1;i--){
             for(int j=1;j<=8;j++){
                 var piece=getPiece(new ChessPosition(i,j));
                 if(piece==null){
