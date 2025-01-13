@@ -11,20 +11,11 @@ import java.util.HashMap;
  */
 public class ChessBoard {
 
-    //FIXME: consider using a dict. This will make removing pieces O(n), but will make finding piece by position, which is more often, O(1)
-    private ArrayList<ChessPiece> pieces;
-    //2d array to store all positions. Form of (row, col). (1,1) bottom left, (8,8) top right
-    private ChessPosition[][] positions=new ChessPosition[8][8];
+    //2d array to store all pieces. Form of (row, col). (1,1) bottom left, (8,8) top right
+    private ChessPiece[][] pieces=new ChessPiece[8][8];
 
     public ChessBoard() {
-        //Set up the positions
-        for(int i=0;i<8;i++){
-            for(int j=0;j<8;j++){
-                positions[i][j]=new ChessPosition(i+1,j+1);
-            }
-        }
-        //Set up the pieces
-        pieces=new ArrayList<>();
+
         resetBoard();
     }
 
@@ -35,7 +26,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        pieces.add(piece);
+        pieces[position.getRow()-1][position.getColumn()-1]=piece;
         piece.setPos(position);
     }
 
@@ -63,12 +54,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        for(var piece: pieces){
-            if(position.equals(piece.getPos())){
-                return piece;
-            }
-        }
-        return null;
+            return pieces[position.getRow()-1][position.getColumn()-1];
     }
 
     /**
@@ -76,7 +62,12 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        pieces.clear();
+        //clear the board
+        for(int i=0;i<8;i++){
+            for(int j=0;j<8;j++){
+                pieces[i][j]=null;
+            }
+        }
 
         //pawns
         for(int i=1;i<=8;i++){
