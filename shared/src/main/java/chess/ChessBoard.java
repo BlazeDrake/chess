@@ -18,7 +18,7 @@ public class ChessBoard {
 
     public ChessBoard() {
 
-        resetBoard();
+        clearBoard();
     }
 
     /**
@@ -59,17 +59,21 @@ public class ChessBoard {
             return pieces[position.getRow()-1][position.getColumn()-1];
     }
 
+    private void clearBoard(){
+        for(int i=0;i<8;i++){
+            for(int j=0;j<8;j++){
+                pieces[i][j]=null;
+            }
+        }
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
         //clear the board
-        for(int i=0;i<8;i++){
-            for(int j=0;j<8;j++){
-                pieces[i][j]=null;
-            }
-        }
+        clearBoard();
 
         //pawns
         for(int i=1;i<=8;i++){

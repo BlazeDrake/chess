@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -100,6 +102,102 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        switch(type){
+            case BISHOP -> {
+                return getBishopMoves(board,myPosition);
+            }
+            case ROOK -> {
+                return getRookMoves(board,myPosition);
+            }
+            case QUEEN -> {
+                throw new RuntimeException("Not implemented");
+            }
+            case KNIGHT -> {
+                throw new RuntimeException("Not implemented");
+            }
+            case PAWN -> {
+                throw new RuntimeException("Not implemented");
+            }
+            case KING -> {
+                throw new RuntimeException("Not implemented");
+            }
+            default ->{
+                return null;
+            }
+        }
+    }
+
+    private Collection<ChessMove> getBishopMoves(ChessBoard board, ChessPosition myPosition){
         throw new RuntimeException("Not implemented");
+    }
+    private Collection<ChessMove> getRookMoves(ChessBoard board, ChessPosition myPosition){
+        var validMoves= new HashSet<ChessMove>();
+        final int col= myPosition.getColumn();
+        final int row= myPosition.getRow();
+        //Get all valid, unblocked positions in current column
+        int i;
+        for(i=row+1;i<=8;i++){
+            var testPos=new ChessPosition(i,col);
+
+            var blockingPiece=board.getPiece(testPos);
+
+            if(blockingPiece!=null){
+                if(blockingPiece.getTeamColor()!=getTeamColor()){
+                    validMoves.add(new ChessMove(myPosition,testPos,null));
+                }
+                break;
+            }
+            else{
+                validMoves.add(new ChessMove(myPosition,testPos,null));
+            }
+        }
+        for(int j=row-1;j>=1;j--){
+            var testPos=new ChessPosition(j,col);
+
+            var blockingPiece=board.getPiece(testPos);
+
+            if(blockingPiece!=null){
+                if(blockingPiece.getTeamColor()!=getTeamColor()){
+                    validMoves.add(new ChessMove(myPosition,testPos,null));
+                }
+                break;
+            }
+            else{
+                validMoves.add(new ChessMove(myPosition,testPos,null));
+            }
+        }
+
+        //Get all valid, unblocked positions in current row
+        for(int k=col+1;k<=8;k++){
+            var testPos=new ChessPosition(row,k);
+
+            var blockingPiece=board.getPiece(testPos);
+
+            if(blockingPiece!=null){
+                if(blockingPiece.getTeamColor()!=getTeamColor()){
+                    validMoves.add(new ChessMove(myPosition,testPos,null));
+                }
+                break;
+            }
+            else{
+                validMoves.add(new ChessMove(myPosition,testPos,null));
+            }
+        }
+        for(int l=col-1;l>=1;l--){
+            var testPos=new ChessPosition(row,l);
+
+            var blockingPiece=board.getPiece(testPos);
+
+            if(blockingPiece!=null){
+                if(blockingPiece.getTeamColor()!=getTeamColor()){
+                    validMoves.add(new ChessMove(myPosition,testPos,null));
+                }
+                break;
+            }
+            else{
+                validMoves.add(new ChessMove(myPosition,testPos,null));
+            }
+        }
+        return validMoves;
     }
 }
