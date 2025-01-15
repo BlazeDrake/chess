@@ -110,24 +110,23 @@ public class ChessPiece {
                 return getRookMoves(board,myPosition);
             }
             case QUEEN -> {
-                var returnSet=getRookMoves(board,myPosition);
-                returnSet.addAll(getBishopMoves(board,myPosition));
-                return returnSet;
+                return getQueenMoves(board,myPosition);
             }
             case KNIGHT -> {
-                throw new RuntimeException("Not implemented");
+                return getKnightMoves(board,myPosition);
             }
             case PAWN -> {
-                throw new RuntimeException("Not implemented");
+                return getPawnMoves(board,myPosition);
             }
             case KING -> {
-                throw new RuntimeException("Not implemented");
+                return getKingMoves(board,myPosition);
             }
             default ->{
                 return null;
             }
         }
     }
+
 
     private Collection<ChessMove> getBishopMoves(ChessBoard board, ChessPosition myPosition){
         var validMoves= new HashSet<ChessMove>();
@@ -269,5 +268,30 @@ public class ChessPiece {
             }
         }
         return validMoves;
+    }
+
+    private Collection<ChessMove> getQueenMoves(ChessBoard board, ChessPosition myPosition){
+        var validMoves=getRookMoves(board,myPosition);
+        validMoves.addAll(getBishopMoves(board,myPosition));
+        return validMoves;
+    }
+
+    private Collection<ChessMove> getKnightMoves(ChessBoard board, ChessPosition myPosition){
+        var validMoves= new HashSet<ChessMove>();
+        final int col= myPosition.getColumn();
+        final int row= myPosition.getRow();
+        throw new RuntimeException("Not implemented");
+    }
+    private Collection<ChessMove> getPawnMoves(ChessBoard board, ChessPosition myPosition){
+        var validMoves= new HashSet<ChessMove>();
+        final int col= myPosition.getColumn();
+        final int row= myPosition.getRow();
+        throw new RuntimeException("Not implemented");
+    }
+    private Collection<ChessMove> getKingMoves(ChessBoard board, ChessPosition myPosition){
+        var validMoves= new HashSet<ChessMove>();
+        final int col= myPosition.getColumn();
+        final int row= myPosition.getRow();
+        throw new RuntimeException("Not implemented");
     }
 }
