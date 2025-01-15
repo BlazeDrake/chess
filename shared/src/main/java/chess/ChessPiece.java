@@ -1,6 +1,5 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -281,14 +280,14 @@ public class ChessPiece {
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
 
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col+1),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col+1),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col-1),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col-1),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col+2),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col+2),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col-2),null),validMoves);
-        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col-2),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col+1),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col+1),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col-1),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col-1),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col+2),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col+2),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col-2),null),validMoves);
+        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col-2),null),validMoves);
 
         return validMoves;
     }
@@ -296,11 +295,26 @@ public class ChessPiece {
         var validMoves= new HashSet<ChessMove>();
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
-        throw new RuntimeException("Not implemented");
-        //Determine color for direction
+
+        //Define dir, up by default (white pieces)
+        int dir = 1;
+
+        //Go down if black, add forward moves
+        if(getTeamColor()== ChessGame.TeamColor.BLACK){
+            dir=-1;
+        }
+        //Add forward moves. It's ok that this would allow double moves for pawns at the end, as they can't move down twice anyway
+        boolean unblocked=tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col), validMoves,false);
+        if((row==2||row==7)&&unblocked){
+            tryAddPawnMove(board,myPosition,new ChessPosition(row+(2*dir), col), validMoves,false);
+        }
+
+
         //Check for captures
-        //Check for first move
-        //Check for promotions
+        tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col+1),validMoves,true);
+        tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col-1),validMoves,true);
+
+        return validMoves;
     }
     private Collection<ChessMove> getKingMoves(ChessBoard board, ChessPosition myPosition){
         var validMoves= new HashSet<ChessMove>();
@@ -309,7 +323,14 @@ public class ChessPiece {
         throw new RuntimeException("Not implemented");
     }
 
-    private boolean tryAddMove(ChessBoard board,ChessMove move,Collection<ChessMove> moveSet){
+    /**
+     * Testing a move for the knight
+     * @param board chessboard used
+     * @param move the move to test
+     * @param moveSet the collection to add the move to if successful
+     * @return true if successful, false if not
+     */
+    private boolean tryAddKnightMove(ChessBoard board, ChessMove move, Collection<ChessMove> moveSet){
         //Test for in bounds
         var endPos=move.getEndPosition();
         var col=endPos.getColumn();
@@ -323,6 +344,55 @@ public class ChessPiece {
         var testPiece=board.getPiece(endPos);
         if(testPiece==null||testPiece.getTeamColor()!=getTeamColor()){
             moveSet.add(move);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    /**
+     * Testing a move for a pawn. Includes promotion
+     * @param board chessboard used
+     * @param startPos the start position
+     * @param endPos the end position
+     * @param moveSet the collection to add the move to if successful
+     * @param capture if this move is for capturing
+     * @return true if successful, false if not
+     */
+    private boolean tryAddPawnMove(ChessBoard board, ChessPosition startPos, ChessPosition endPos, Collection<ChessMove> moveSet, boolean capture){
+        //Test for in bounds
+        var col=endPos.getColumn();
+        var row=endPos.getRow();
+
+        if(row>8||row<1||col>8||col<1){
+            return false;
+        }
+
+        //check for promotions
+        var moves=new HashSet<ChessMove>();
+        if(row==8||row==1){
+            moves.add(new ChessMove(startPos,endPos,PieceType.BISHOP));
+            moves.add(new ChessMove(startPos,endPos,PieceType.ROOK));
+            moves.add(new ChessMove(startPos,endPos,PieceType.KNIGHT));
+            moves.add(new ChessMove(startPos,endPos,PieceType.QUEEN));
+        }
+        else{
+            moves.add(new ChessMove(startPos,endPos,null));
+        }
+
+        //Test for pieces
+        var testPiece=board.getPiece(endPos);
+        if(testPiece==null){
+            if(!capture){
+                moveSet.addAll(moves);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(testPiece.getTeamColor()!=getTeamColor()&&capture){
+            moveSet.addAll(moves);
             return true;
         }
         else{
