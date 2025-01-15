@@ -280,18 +280,53 @@ public class ChessPiece {
         var validMoves= new HashSet<ChessMove>();
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
-        throw new RuntimeException("Not implemented");
+
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col+1),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col+1),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col-1),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col-1),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col+2),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col+2),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col-2),null),validMoves);
+        tryAddMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col-2),null),validMoves);
+
+        return validMoves;
     }
     private Collection<ChessMove> getPawnMoves(ChessBoard board, ChessPosition myPosition){
         var validMoves= new HashSet<ChessMove>();
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
         throw new RuntimeException("Not implemented");
+        //Determine color for direction
+        //Check for captures
+        //Check for first move
+        //Check for promotions
     }
     private Collection<ChessMove> getKingMoves(ChessBoard board, ChessPosition myPosition){
         var validMoves= new HashSet<ChessMove>();
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
         throw new RuntimeException("Not implemented");
+    }
+
+    private boolean tryAddMove(ChessBoard board,ChessMove move,Collection<ChessMove> moveSet){
+        //Test for in bounds
+        var endPos=move.getEndPosition();
+        var col=endPos.getColumn();
+        var row=endPos.getRow();
+
+        if(row>8||row<1||col>8||col<1){
+            return false;
+        }
+
+        //Test for pieces
+        var testPiece=board.getPiece(endPos);
+        if(testPiece==null||testPiece.getTeamColor()!=getTeamColor()){
+            moveSet.add(move);
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }
