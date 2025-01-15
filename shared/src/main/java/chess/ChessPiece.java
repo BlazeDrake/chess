@@ -280,14 +280,14 @@ public class ChessPiece {
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
 
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col+1),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col+1),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col-1),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col-1),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col+2),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col+2),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col-2),null),validMoves);
-        tryAddKnightMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col-2),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col+1),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col+1),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col-1),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col-1),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col+2),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col+2),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col-2),null),validMoves);
+        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col-2),null),validMoves);
 
         return validMoves;
     }
@@ -320,17 +320,26 @@ public class ChessPiece {
         var validMoves= new HashSet<ChessMove>();
         final int col= myPosition.getColumn();
         final int row= myPosition.getRow();
-        throw new RuntimeException("Not implemented");
+
+        //Check moves one column at a time
+        for(int i=-1;i<=1;i++){
+            tryAddGenericMove(board,new ChessMove(myPosition, new ChessPosition(row+1,col+i),null),validMoves);
+            tryAddGenericMove(board,new ChessMove(myPosition, new ChessPosition(row,col+i),null),validMoves);
+            tryAddGenericMove(board,new ChessMove(myPosition, new ChessPosition(row-1,col+i),null),validMoves);
+        }
+
+
+        return validMoves;
     }
 
     /**
-     * Testing a move for the knight
+     * Testing a move for the knight and king
      * @param board chessboard used
      * @param move the move to test
      * @param moveSet the collection to add the move to if successful
      * @return true if successful, false if not
      */
-    private boolean tryAddKnightMove(ChessBoard board, ChessMove move, Collection<ChessMove> moveSet){
+    private boolean tryAddGenericMove(ChessBoard board, ChessMove move, Collection<ChessMove> moveSet){
         //Test for in bounds
         var endPos=move.getEndPosition();
         var col=endPos.getColumn();
