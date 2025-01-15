@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
+import piece_calculators.KingMovesCalculator;
+import piece_calculators.KnightMovesCalculator;
+
 /**
  * Represents a single chess piece
  * <p>
@@ -112,13 +115,13 @@ public class ChessPiece {
                 return getQueenMoves(board,myPosition);
             }
             case KNIGHT -> {
-                return getKnightMoves(board,myPosition);
+                return new KnightMovesCalculator().pieceMoves(board,myPosition);
             }
             case PAWN -> {
                 return getPawnMoves(board,myPosition);
             }
             case KING -> {
-                return getKingMoves(board,myPosition);
+                return new KingMovesCalculator().pieceMoves(board,myPosition);
             }
             default ->{
                 return null;
@@ -275,22 +278,6 @@ public class ChessPiece {
         return validMoves;
     }
 
-    private Collection<ChessMove> getKnightMoves(ChessBoard board, ChessPosition myPosition){
-        var validMoves= new HashSet<ChessMove>();
-        final int col= myPosition.getColumn();
-        final int row= myPosition.getRow();
-
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col+1),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col+1),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+2,col-1),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-2,col-1),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col+2),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col+2),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row+1,col-2),null),validMoves);
-        tryAddGenericMove(board,new ChessMove(myPosition,new ChessPosition(row-1,col-2),null),validMoves);
-
-        return validMoves;
-    }
     private Collection<ChessMove> getPawnMoves(ChessBoard board, ChessPosition myPosition){
         var validMoves= new HashSet<ChessMove>();
         final int col= myPosition.getColumn();
@@ -315,49 +302,6 @@ public class ChessPiece {
         tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col-1),validMoves,true);
 
         return validMoves;
-    }
-    private Collection<ChessMove> getKingMoves(ChessBoard board, ChessPosition myPosition){
-        var validMoves= new HashSet<ChessMove>();
-        final int col= myPosition.getColumn();
-        final int row= myPosition.getRow();
-
-        //Check moves one column at a time
-        for(int i=-1;i<=1;i++){
-            tryAddGenericMove(board,new ChessMove(myPosition, new ChessPosition(row+1,col+i),null),validMoves);
-            tryAddGenericMove(board,new ChessMove(myPosition, new ChessPosition(row,col+i),null),validMoves);
-            tryAddGenericMove(board,new ChessMove(myPosition, new ChessPosition(row-1,col+i),null),validMoves);
-        }
-
-
-        return validMoves;
-    }
-
-    /**
-     * Testing a move for the knight and king
-     * @param board chessboard used
-     * @param move the move to test
-     * @param moveSet the collection to add the move to if successful
-     * @return true if successful, false if not
-     */
-    private boolean tryAddGenericMove(ChessBoard board, ChessMove move, Collection<ChessMove> moveSet){
-        //Test for in bounds
-        var endPos=move.getEndPosition();
-        var col=endPos.getColumn();
-        var row=endPos.getRow();
-
-        if(row>8||row<1||col>8||col<1){
-            return false;
-        }
-
-        //Test for pieces
-        var testPiece=board.getPiece(endPos);
-        if(testPiece==null||testPiece.getTeamColor()!=getTeamColor()){
-            moveSet.add(move);
-            return true;
-        }
-        else{
-            return false;
-        }
     }
     /**
      * Testing a move for a pawn. Includes promotion
