@@ -32,6 +32,15 @@ public class ChessBoard {
         piece.setPos(position);
     }
 
+    public void movePiece(ChessMove moveToDo){
+        var startPos=moveToDo.getStartPosition();
+        var movedPiece=getPiece(startPos);
+        if(movedPiece!=null){
+            addPiece(moveToDo.getEndPosition(),new ChessPiece(movedPiece.getTeamColor(),movedPiece.getPieceType()));
+            pieces[startPos.getRow()-1][startPos.getColumn()-1]=null;
+        }
+    }
+
     /**
      * Adds 4 copies of pieces that are repeated to the board. Used for resetting the board only
      * @param col the column on the right to add the piece to (must not be larger than 4)

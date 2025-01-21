@@ -12,7 +12,9 @@ import java.util.Objects;
 public class ChessGame {
 
     private ChessBoard board;
-    TeamColor curPlayer;
+    private TeamColor curPlayer;
+    private ChessPosition whiteKingPos;
+    private ChessPosition blackKingPos;
 
     public ChessGame() {
         board=new ChessBoard();
@@ -62,6 +64,17 @@ public class ChessGame {
         BLACK
     }
 
+    private boolean isValidMove(ChessMove move){
+        var pos=move.getStartPosition();
+        var piece=board.getPiece(pos);
+        boolean returnVal=true;
+        if(piece==null){
+            return false;
+        }
+        //temporarily move the piece, then test for check
+        return returnVal;
+    }
+
     /**
      * Gets a valid moves for a piece at the given location
      *
@@ -70,7 +83,17 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+
+        var testPiece=board.getPiece(startPosition);
+        if(testPiece==null){
+            return null;
+        }
         throw new RuntimeException("Not implemented");
+        /*
+         foreach move in the chosen pieces available moves, run isvalidMove
+         If it is, remove it from the list of available moves
+         REturn whatever remains
+         */
     }
 
     /**
@@ -81,6 +104,7 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         throw new RuntimeException("Not implemented");
+        //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
     }
 
     /**
@@ -90,7 +114,11 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+
         throw new RuntimeException("Not implemented");
+        //Maybe also lists or sets that contain all potential threats to kings? This would make checkmate tests easy.
+        //The other alternative is to check down paths where a piece could get the king from the king, and check whatever specific path a piece is blocking when it tries to move
+
     }
 
     /**
@@ -101,6 +129,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        //Check if there are no valid moves for the king, and teh king is in check
     }
 
     /**
@@ -112,6 +141,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        //Check if there are no valid moves for the king, and teh king isn't in check
     }
 
     /**
