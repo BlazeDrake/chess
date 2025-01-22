@@ -42,7 +42,6 @@ public class ValidMovesTests {
         assertMoves(game, validMoves, queenPosition);
     }
 
-
     @Test
     @DisplayName("Piece Partially Trapped")
     public void moveIntoCheck() {

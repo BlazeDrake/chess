@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -72,6 +73,21 @@ public class ChessGame {
             return false;
         }
         //temporarily move the piece, then test for check
+        var baseOldPiece=board.getPiece(move.getEndPosition());
+        board.movePiece(move);
+
+        if(isInCheck(piece.getTeamColor())){
+            returnVal=false;
+        }
+        System.out.println(board.toString());
+
+        board.movePiece(new ChessMove(move.getEndPosition(),pos,null));
+        if(baseOldPiece!=null){
+            var oldPiece=new ChessPiece(baseOldPiece.getTeamColor(),baseOldPiece.getPieceType());
+            board.addPiece(move.getEndPosition(), oldPiece);
+        }
+        System.out.println(returnVal);
+        System.out.println(board.toString());
         return returnVal;
     }
 
@@ -88,12 +104,20 @@ public class ChessGame {
         if(testPiece==null){
             return null;
         }
-        throw new RuntimeException("Not implemented");
+
+        ArrayList<ChessMove> testMoves=new ArrayList<>(testPiece.pieceMoves(board,startPosition));
         /*
          foreach move in the chosen pieces available moves, run isvalidMove
          If it is, remove it from the list of available moves
          REturn whatever remains
          */
+        for(int i=0;i< testMoves.size();i++){
+            if(!isValidMove(testMoves.get(i))){
+                testMoves.remove(i);
+                i--;
+            }
+        }
+        return testMoves;
     }
 
     /**
@@ -114,8 +138,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-
-        throw new RuntimeException("Not implemented");
+        return true;
         //Maybe also lists or sets that contain all potential threats to kings? This would make checkmate tests easy.
         //The other alternative is to check down paths where a piece could get the king from the king, and check whatever specific path a piece is blocking when it tries to move
 
