@@ -32,13 +32,21 @@ public class ChessBoard {
         piece.setPos(position);
     }
 
-    public void movePiece(ChessMove moveToDo){
+    /**
+     *
+     * @param moveToDo the move to make
+     * @return the piece that was moved
+     */
+    public ChessPiece movePiece(ChessMove moveToDo){
         var startPos=moveToDo.getStartPosition();
         var movedPiece=getPiece(startPos);
         if(movedPiece!=null){
-            addPiece(moveToDo.getEndPosition(),new ChessPiece(movedPiece.getTeamColor(),movedPiece.getPieceType()));
+            var returnPiece=new ChessPiece(movedPiece.getTeamColor(),movedPiece.getPieceType());
+            addPiece(moveToDo.getEndPosition(),returnPiece);
             pieces[startPos.getRow()-1][startPos.getColumn()-1]=null;
+            return returnPiece;
         }
+        return null;
     }
 
     /**

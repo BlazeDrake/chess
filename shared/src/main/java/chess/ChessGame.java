@@ -1,7 +1,10 @@
 package chess;
 
+import piece_calculators.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -14,14 +17,25 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor curPlayer;
-    private ChessPosition whiteKingPos;
-    private ChessPosition blackKingPos;
+    private ChessPiece whiteKing;
+    private ChessPiece blackKing;
+
+    private ArrayList<CheckCalculator> checkCalculators;
 
     public ChessGame() {
         board=new ChessBoard();
         board.resetBoard();
 
         curPlayer=TeamColor.WHITE;
+
+        checkCalculators = new ArrayList();
+        checkCalculators.add(new CheckCalculator(new BishopMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.BISHOP})));
+        checkCalculators.add(new CheckCalculator(new RookMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.ROOK})));
+        checkCalculators.add(new CheckCalculator(new KnightMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT})));
+
+        //Get the kings
+        blackKing=board.getPiece(new ChessPosition(8,5));
+        whiteKing=board.getPiece(new ChessPosition(1,5));
     }
 
     /**
@@ -129,6 +143,7 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         throw new RuntimeException("Not implemented");
         //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
+        //If the piece is a king, update the king variable to the new one (also will be required in the isValidMove)
     }
 
     /**
@@ -138,10 +153,19 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return true;
-        //Maybe also lists or sets that contain all potential threats to kings? This would make checkmate tests easy.
-        //The other alternative is to check down paths where a piece could get the king from the king, and check whatever specific path a piece is blocking when it tries to move
-
+        ChessPosition kingPos=teamColor==TeamColor.BLACK?blackKing.getPos():whiteKing.getPos();
+        for(var calculator: checkCalculators){
+            for(var pos: calculator.getCalculator().pieceMoves(board, kingPos)){
+                //If a piece could move to the king's position(in line & a kind of piece that can make the move) & isn't the same team, the king is in check
+                var testPiece=board.getPiece(pos.getEndPosition());
+                if(testPiece!=null&&testPiece.getTeamColor()!=teamColor){
+                    if(calculator.getValidPieceTypes().contains(testPiece.getPieceType())){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -174,6 +198,20 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board=board;
+        //find the king
+        for(int i=1;i<=8;i++){
+            for(int j=1;j<=8;j++){
+                var testPiece=board.getPiece(new ChessPosition(i,j));
+                if(testPiece!=null&&testPiece.getPieceType()==ChessPiece.PieceType.KING){
+                    if(testPiece.getTeamColor()==TeamColor.BLACK){
+                        blackKing=testPiece;
+                    }
+                    else{
+                        whiteKing=testPiece;
+                    }
+                }
+            }
+        }
     }
 
     /**
