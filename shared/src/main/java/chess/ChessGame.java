@@ -34,8 +34,8 @@ public class ChessGame {
         checkCalculators.add(new CheckCalculator(new KnightMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT})));
 
         //Get the kings
-        blackKing=board.getPiece(new ChessPosition(8,5));
         whiteKing=board.getPiece(new ChessPosition(1,5));
+        whiteKing=board.getPiece(new ChessPosition(8,5));
     }
 
     /**
@@ -88,20 +88,36 @@ public class ChessGame {
         }
         //temporarily move the piece, then test for check
         var baseOldPiece=board.getPiece(move.getEndPosition());
-        board.movePiece(move);
+        var tempTestPiece = board.movePiece(move);
+        if(tempTestPiece.getPieceType()== ChessPiece.PieceType.KING){
+            if(tempTestPiece.getTeamColor()==TeamColor.WHITE){
+                whiteKing=tempTestPiece;
+            }
+            else{
+                blackKing=tempTestPiece;
+            }
+        }
 
         if(isInCheck(piece.getTeamColor())){
             returnVal=false;
         }
-        System.out.println(board.toString());
+        //System.out.println(board.toString());
 
-        board.movePiece(new ChessMove(move.getEndPosition(),pos,null));
+        var returnedTestPiece=board.movePiece(new ChessMove(move.getEndPosition(),pos,null));
+        if(returnedTestPiece.getPieceType()== ChessPiece.PieceType.KING){
+            if(returnedTestPiece.getTeamColor()==TeamColor.WHITE){
+                whiteKing=returnedTestPiece;
+            }
+            else{
+                blackKing=returnedTestPiece;
+            }
+        }
         if(baseOldPiece!=null){
             var oldPiece=new ChessPiece(baseOldPiece.getTeamColor(),baseOldPiece.getPieceType());
             board.addPiece(move.getEndPosition(), oldPiece);
         }
-        System.out.println(returnVal);
-        System.out.println(board.toString());
+      //  System.out.println(returnVal);
+      //  System.out.println(board.toString());
         return returnVal;
     }
 
@@ -153,8 +169,9 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition kingPos=teamColor==TeamColor.BLACK?blackKing.getPos():whiteKing.getPos();
+
         for(var calculator: checkCalculators){
+            ChessPosition kingPos=teamColor==TeamColor.BLACK?blackKing.getPos():whiteKing.getPos();
             for(var pos: calculator.getCalculator().pieceMoves(board, kingPos)){
                 //If a piece could move to the king's position(in line & a kind of piece that can make the move) & isn't the same team, the king is in check
                 var testPiece=board.getPiece(pos.getEndPosition());
@@ -168,6 +185,18 @@ public class ChessGame {
         return false;
     }
 
+    private boolean teamCanMove(TeamColor teamColor){
+        for(int i=1;i<=8;i++){
+            for(int j=1;j<=8;j++){
+                var move = validMoves(new ChessPosition(i,j));
+                if(move!=null&&move.isEmpty()){
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
     /**
      * Determines if the given team is in checkmate
      *
@@ -175,7 +204,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInCheck(teamColor)&&!teamCanMove(teamColor);
         //Check if there are no valid moves for the king, and teh king is in check
     }
 
@@ -187,7 +216,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return !isInCheck(teamColor)&&!teamCanMove(teamColor);
         //Check if there are no valid moves for the king, and teh king isn't in check
     }
 

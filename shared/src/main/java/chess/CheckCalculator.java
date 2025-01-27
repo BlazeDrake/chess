@@ -12,7 +12,7 @@ public class CheckCalculator {
 
     public CheckCalculator(PieceMovesCalculator calculator, Collection<ChessPiece.PieceType> pieceTypes) {
         this.calculator = calculator;
-        this.validPieceTypes= new HashSet();
+        this.validPieceTypes= new HashSet<ChessPiece.PieceType>();
         validPieceTypes.addAll(pieceTypes);
     }
 
