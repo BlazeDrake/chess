@@ -143,7 +143,7 @@ public class ChessGame {
          If it is, remove it from the list of available moves
          REturn whatever remains
          */
-        for(int i=0;i< testMoves.size();i++){
+        for(int i=0;i< testMoves  .size();i++){
             if(!isValidMove(testMoves.get(i))){
                 testMoves.remove(i);
                 i--;
@@ -159,9 +159,31 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+
         //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
-        //If the piece is a king, update the king variable to the new one (also will be required in the isValidMove)
+        var possibleMoves=validMoves(move.getStartPosition());
+        if(possibleMoves==null||!possibleMoves.contains(move)){
+            throw new InvalidMoveException("Invalid move: "+move.toString());
+        }
+        else if(curPlayer!=board.getPiece(move.getStartPosition()).getTeamColor()){
+            throw new InvalidMoveException("It is not this piece team's turn!");
+        }
+        else{
+            var movedPiece=board.movePiece(move);
+            //Update the turn
+            curPlayer = curPlayer==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE;
+            //If the piece is a king, update the king variable to the new one
+            if(movedPiece!=null&&movedPiece.getPieceType()== ChessPiece.PieceType.KING){
+                if(movedPiece.getTeamColor()==TeamColor.BLACK){
+                    blackKing=movedPiece;
+                }
+                else{
+                    whiteKing=movedPiece;
+                }
+
+
+            }
+        }
     }
 
     /**
