@@ -32,6 +32,8 @@ public class ChessGame {
         checkCalculators.add(new CheckCalculator(new BishopMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.BISHOP})));
         checkCalculators.add(new CheckCalculator(new RookMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.ROOK})));
         checkCalculators.add(new CheckCalculator(new KnightMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT})));
+        checkCalculators.add(new CheckCalculator(new KingMovesCalculator(),List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN})));
+        checkCalculators.add(new CheckCalculator(new PawnMovesCalculator(),List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.PAWN, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN})));
 
         //Get the kings
         whiteKing=board.getPiece(new ChessPosition(1,5));
@@ -188,10 +190,15 @@ public class ChessGame {
     private boolean teamCanMove(TeamColor teamColor){
         for(int i=1;i<=8;i++){
             for(int j=1;j<=8;j++){
-                var move = validMoves(new ChessPosition(i,j));
-                if(move!=null&&move.isEmpty()){
-                    return false;
+                var testPos=new ChessPosition(i,j);
+                var testPiece=board.getPiece(testPos);
+                if(testPiece!=null&&testPiece.getTeamColor()==teamColor){
+                    var move = validMoves(testPos);
+                    if(move!=null&&move.isEmpty()){
+                        return false;
+                    }
                 }
+
             }
         }
 
