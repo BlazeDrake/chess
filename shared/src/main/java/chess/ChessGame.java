@@ -37,7 +37,7 @@ public class ChessGame {
 
         //Get the kings
         whiteKing=board.getPiece(new ChessPosition(1,5));
-        whiteKing=board.getPiece(new ChessPosition(8,5));
+        blackKing=board.getPiece(new ChessPosition(8,5));
     }
 
     /**
