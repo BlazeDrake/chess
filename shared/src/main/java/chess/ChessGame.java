@@ -28,7 +28,7 @@ public class ChessGame {
 
         curPlayer=TeamColor.WHITE;
 
-        checkCalculators = new ArrayList();
+        checkCalculators = new ArrayList<>();
         checkCalculators.add(new CheckCalculator(new BishopMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.BISHOP})));
         checkCalculators.add(new CheckCalculator(new RookMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.ROOK})));
         checkCalculators.add(new CheckCalculator(new KnightMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT})));
@@ -194,15 +194,15 @@ public class ChessGame {
                 var testPiece=board.getPiece(testPos);
                 if(testPiece!=null&&testPiece.getTeamColor()==teamColor){
                     var move = validMoves(testPos);
-                    if(move!=null&&move.isEmpty()){
-                        return false;
+                    if(move!=null&&!move.isEmpty()){
+                        return true;
                     }
                 }
 
             }
         }
 
-        return true;
+        return false;
     }
     /**
      * Determines if the given team is in checkmate
