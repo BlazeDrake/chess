@@ -32,7 +32,9 @@ public class ChessGame {
         curPlayer=TeamColor.WHITE;
 
         checkCalculators = new ArrayList<>();
-        checkCalculators.add(new CheckCalculator(new BishopMovesCalculator(), List.of(new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.BISHOP})));
+        checkCalculators.add(new CheckCalculator(new BishopMovesCalculator(), List.of(
+                ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.BISHOP
+        )));
         checkCalculators.add(new CheckCalculator(new RookMovesCalculator(), List.of(
                 ChessPiece.PieceType.QUEEN,
                 ChessPiece.PieceType.ROOK
@@ -304,7 +306,7 @@ public class ChessGame {
         for(var calculator: checkCalculators){
             ChessPosition kingPos=teamColor==TeamColor.BLACK?blackKing.getPos():whiteKing.getPos();
             for(var pos: calculator.getCalculator().pieceMoves(board, kingPos)){
-                //If a piece could move to the king's position(in line & a kind of piece that can make the move) & isn't the same team, the king is in check
+                //If a piece could move to the king's position & isn't the same team, the king is in check
                 var testPiece=board.getPiece(pos.getEndPosition());
                 if(testPiece!=null&&testPiece.getTeamColor()!=teamColor){
                     if(calculator.getValidPieceTypes().contains(testPiece.getPieceType())){
