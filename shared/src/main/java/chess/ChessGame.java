@@ -129,6 +129,34 @@ public class ChessGame {
     }
 
     /**
+     * Tests if a rook can castle with the king
+     * @param rookPos the position of the rook
+     */
+    private boolean rookIsValid(ChessPosition rookPos){
+        var rook=board.getPiece(rookPos);
+        //exit early if the rook has moved(if it's not a rook, it would have had to move to be there) or if there's no piece in the rook pos
+        if(rook==null||rook.getHasMoved()){
+            return false;
+        }
+        //check for blocks
+
+        int rookCol=rookPos.getColumn();
+        //Set the direction to test ( will move right if in column 1; otherwise it must be in column 8 and so will  move left)
+        int dir=rookCol==1?1:-1;
+        //Start 1 space in the direction of dir, then continue until hitting a piece or the board end
+        for(int i=1;i<=7;i++){
+            var testPos=new ChessPosition(rookPos.getRow(),rookCol+(i*dir));
+            var testPiece=board.getPiece(testPos);
+            //if the first piece is a king of the same color, return true. Otherwise, return false
+            if(testPiece!=null){
+                return testPiece.getPieceType()== ChessPiece.PieceType.KING && testPiece.getTeamColor()==rook.getTeamColor();
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Gets a valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
@@ -146,7 +174,7 @@ public class ChessGame {
         /*
          foreach move in the chosen pieces available moves, run isvalidMove
          If it is, remove it from the list of available moves
-         REturn whatever remains
+         Return whatever remains
          */
         for(int i=0;i< testMoves  .size();i++){
             if(!isValidMove(testMoves.get(i))){
@@ -157,6 +185,20 @@ public class ChessGame {
         //Add en passant (add a variable for en passantable location) and castling (for castling, add a variable for if the king moved)if valid
         if(testPiece.getPieceType()== ChessPiece.PieceType.PAWN&&enPassantPos!=null){
             new PawnMovesCalculator().tryAddPawnMove(board,startPosition,enPassantPos,testMoves,testPiece,false);
+        }
+        else if(testPiece.getPieceType()== ChessPiece.PieceType.KING){
+            //If the king isn't in check, and hasn't moved, test for potential castling
+            if(!testPiece.getHasMoved()&&!isInCheck(testPiece.getTeamColor())){
+                var row=startPosition.getRow();
+                //test left rook
+                if(rookIsValid(new ChessPosition(row,1))){
+                    testMoves.add(new ChessMove(startPosition,new ChessPosition(row,startPosition.getColumn()-2),null));
+                }
+                //test right rook
+                if(rookIsValid(new ChessPosition(row,8))){
+                    testMoves.add(new ChessMove(startPosition,new ChessPosition(row,startPosition.getColumn()+2),null));
+                }
+            }
         }
         return testMoves;
     }
@@ -182,31 +224,45 @@ public class ChessGame {
         else{
             var movedPiece=board.movePiece(move);
             //If the piece is a king, update the king variable to the new one
-            if(movedPiece!=null&&movedPiece.getPieceType()== ChessPiece.PieceType.KING){
-                //handle castling(if it's a castle, move the rook too. Regardless, set that team's variable for if the king can castle to false
-                if(movedPiece.getTeamColor()==TeamColor.BLACK){
-                    blackKing=movedPiece;
-                }
-                else{
-                    whiteKing=movedPiece;
-                }
-            }
-            //handle en passant (if it's a pawn double moving, store it in the en passant variable. Otherwise reset en passant variable)
-            if(movedPiece.getPieceType()== ChessPiece.PieceType.PAWN){
-                if(Math.abs(endPos.getRow()-startPos.getRow())==2){
-                    int mult = curPlayer==TeamColor.BLACK?-1:1;
-                    enPassantPos=new ChessPosition(startPos.getRow()+mult,startPos.getColumn());
-                }
-                else{
-                    if(move.getEndPosition().equals(enPassantPos)){
-                        //additional checks
-                        board.removePiece(new ChessPosition(startPos.getRow(),endPos.getColumn()));
+            if(movedPiece!=null){
+                movedPiece.setHasMoved(true);
+                if(movedPiece.getPieceType()== ChessPiece.PieceType.KING) {
+                    int colMovement=endPos.getColumn()-startPos.getColumn();
+                    //right castle
+                    if(colMovement==2){
+                        var rookPos=new ChessPosition(endPos.getRow(),8);
+                        board.getPiece(rookPos).setHasMoved(true);
+                        board.movePiece(new ChessMove(rookPos,new ChessPosition(endPos.getRow(),endPos.getColumn()-1),null));
                     }
+                    else if(colMovement==-2){
+                        var rookPos=new ChessPosition(endPos.getRow(),1);
+                        board.getPiece(rookPos).setHasMoved(true);
+                        board.movePiece(new ChessMove(rookPos,new ChessPosition(endPos.getRow(),endPos.getColumn()+1),null));
+                    }
+                    //handle castling(if it's a castle, move the rook too
+                    if (movedPiece.getTeamColor() == TeamColor.BLACK) {
+                        blackKing = movedPiece;
+                    } else {
+                        whiteKing = movedPiece;
+                    }
+                }
+                //handle en passant (if it's a pawn double moving, store it in the en passant variable. Otherwise reset en passant variable)
+                if(movedPiece.getPieceType()== ChessPiece.PieceType.PAWN){
+                    if(Math.abs(endPos.getRow()-startPos.getRow())==2){
+                        int mult = curPlayer==TeamColor.BLACK?-1:1;
+                        enPassantPos=new ChessPosition(startPos.getRow()+mult,startPos.getColumn());
+                    }
+                    else{
+                        if(move.getEndPosition().equals(enPassantPos)){
+                            //additional checks
+                            board.removePiece(new ChessPosition(startPos.getRow(),endPos.getColumn()));
+                        }
+                        enPassantPos=null;
+                    }
+                }
+                else{
                     enPassantPos=null;
                 }
-            }
-            else{
-                enPassantPos=null;
             }
 
             //Update the turn

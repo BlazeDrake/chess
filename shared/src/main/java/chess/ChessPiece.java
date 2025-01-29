@@ -19,10 +19,13 @@ public class ChessPiece {
 
     private ChessPosition pos;
 
+    private boolean hasMoved;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
         this.pos = null;
+        this.hasMoved=false;
     }
 
     @Override
@@ -91,6 +94,14 @@ public class ChessPiece {
      */
     public void setPos(ChessPosition pos) {
         this.pos = pos;
+    }
+
+    public boolean getHasMoved() {
+        return hasMoved;
+    }
+
+    public void setHasMoved(boolean value){
+        hasMoved=value;
     }
 
     /**

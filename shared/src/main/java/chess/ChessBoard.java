@@ -53,6 +53,7 @@ public class ChessBoard {
             var movePromotion=moveToDo.getPromotionPiece();
             var usedPiece=movePromotion==null?movedPiece.getPieceType():movePromotion;
             var returnPiece=new ChessPiece(movedPiece.getTeamColor(),usedPiece);
+            returnPiece.setHasMoved(movedPiece.getHasMoved());
             addPiece(moveToDo.getEndPosition(),returnPiece);
             pieces[startPos.getRow()-1][startPos.getColumn()-1]=null;
             return returnPiece;
