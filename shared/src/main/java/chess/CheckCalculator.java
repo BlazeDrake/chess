@@ -1,7 +1,7 @@
 package chess;
 
 
-import piece_calculators.PieceMovesCalculator;
+import calculators.PieceMovesCalculator;
 
 import java.util.Collection;
 import java.util.HashSet;

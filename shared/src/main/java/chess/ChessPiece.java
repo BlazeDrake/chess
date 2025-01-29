@@ -1,10 +1,9 @@
 package chess;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
 
-import piece_calculators.*;
+import calculators.*;
 
 /**
  * Represents a single chess piece

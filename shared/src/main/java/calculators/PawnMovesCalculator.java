@@ -1,4 +1,4 @@
-package piece_calculators;
+package calculators;
 
 import chess.*;
 
@@ -20,61 +20,67 @@ public class PawnMovesCalculator implements PieceMovesCalculator{
          dir=-1;
       }
       //Add forward moves. It's ok that this would allow double moves for pawns at the end, as they can't move down twice anyway
-      boolean unblocked=tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col), validMoves,piece, false);
+      boolean unblocked=tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col), validMoves, false);
       if((row==2||row==7)&&unblocked){
-         tryAddPawnMove(board,myPosition,new ChessPosition(row+(2*dir), col), validMoves,piece, false);
+         tryAddPawnMove(board,myPosition,new ChessPosition(row+(2*dir), col), validMoves, false);
       }
 
 
       //Check for captures
-      tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col+1),validMoves,piece, true);
-      tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col-1),validMoves,piece, true);
+      tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col+1),validMoves, true);
+      tryAddPawnMove(board,myPosition,new ChessPosition(row+dir, col-1),validMoves, true);
 
       return validMoves;
    }
    /**
     * Testing a move for a pawn. Includes promotion
     * @param board chessboard used
-    * @param startPos the start position
-    * @param endPos the end position
-    * @param moveSet the collection to add the move to if successful
+    * @param start the start position
+    * @param end the end position
+    * @param moves the collection to add the move to if successful
     * @param capture if this move is for capturing
     * @return true if successful, false if not
     */
-   public boolean tryAddPawnMove(ChessBoard board, ChessPosition startPos, ChessPosition endPos, Collection<ChessMove> moveSet, ChessPiece piece, boolean capture){
+   public boolean tryAddPawnMove(ChessBoard board, ChessPosition start, ChessPosition end, Collection<ChessMove> moves, boolean capture){
       //Test for in bounds
-      var col=endPos.getColumn();
-      var row=endPos.getRow();
+      var col=end.getColumn();
+      var row=end.getRow();
 
       if(row>8||row<1||col>8||col<1){
          return false;
       }
 
+      //test if pawn is valid
+      var pawn=board.getPiece(start);
+      if(pawn==null){
+         return false;
+      }
+
       //check for promotions
-      var moves=new HashSet<ChessMove>();
+      var testMoves=new HashSet<ChessMove>();
       if(row==8||row==1){
-         moves.add(new ChessMove(startPos,endPos, ChessPiece.PieceType.BISHOP));
-         moves.add(new ChessMove(startPos,endPos, ChessPiece.PieceType.ROOK));
-         moves.add(new ChessMove(startPos,endPos, ChessPiece.PieceType.KNIGHT));
-         moves.add(new ChessMove(startPos,endPos, ChessPiece.PieceType.QUEEN));
+         testMoves.add(new ChessMove(start,end, ChessPiece.PieceType.BISHOP));
+         testMoves.add(new ChessMove(start,end, ChessPiece.PieceType.ROOK));
+         testMoves.add(new ChessMove(start,end, ChessPiece.PieceType.KNIGHT));
+         testMoves.add(new ChessMove(start,end, ChessPiece.PieceType.QUEEN));
       }
       else{
-         moves.add(new ChessMove(startPos,endPos,null));
+         testMoves.add(new ChessMove(start,end,null));
       }
 
       //Test for pieces
-      var testPiece=board.getPiece(endPos);
+      var testPiece=board.getPiece(end);
       if(testPiece==null){
          if(!capture){
-            moveSet.addAll(moves);
+            moves.addAll(testMoves);
             return true;
          }
          else{
             return false;
          }
       }
-      else if(testPiece.getTeamColor()!=piece.getTeamColor()&&capture){
-         moveSet.addAll(moves);
+      else if(testPiece.getTeamColor()!=pawn.getTeamColor()&&capture){
+         moves.addAll(testMoves);
          return true;
       }
       else{
