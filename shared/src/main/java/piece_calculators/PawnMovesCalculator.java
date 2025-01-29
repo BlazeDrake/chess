@@ -41,7 +41,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator{
     * @param capture if this move is for capturing
     * @return true if successful, false if not
     */
-   private boolean tryAddPawnMove(ChessBoard board, ChessPosition startPos, ChessPosition endPos, Collection<ChessMove> moveSet, ChessPiece piece, boolean capture){
+   public boolean tryAddPawnMove(ChessBoard board, ChessPosition startPos, ChessPosition endPos, Collection<ChessMove> moveSet, ChessPiece piece, boolean capture){
       //Test for in bounds
       var col=endPos.getColumn();
       var row=endPos.getRow();

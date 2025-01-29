@@ -20,6 +20,9 @@ public class ChessGame {
     private ChessPiece whiteKing;
     private ChessPiece blackKing;
 
+    private ChessPosition enPassantPos;
+
+
     private ArrayList<CheckCalculator> checkCalculators;
 
     public ChessGame() {
@@ -38,6 +41,8 @@ public class ChessGame {
         //Get the kings
         whiteKing=board.getPiece(new ChessPosition(1,5));
         blackKing=board.getPiece(new ChessPosition(8,5));
+
+        enPassantPos=null;
     }
 
     /**
@@ -149,6 +154,10 @@ public class ChessGame {
                 i--;
             }
         }
+        //Add en passant (add a variable for en passantable location) and castling (for castling, add a variable for if the king moved)if valid
+        if(testPiece.getPieceType()== ChessPiece.PieceType.PAWN&&enPassantPos!=null){
+            new PawnMovesCalculator().tryAddPawnMove(board,startPosition,enPassantPos,testMoves,testPiece,false);
+        }
         return testMoves;
     }
 
@@ -160,8 +169,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
 
+        var endPos=move.getEndPosition();
+        var startPos=move.getStartPosition();
         //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
-        var possibleMoves=validMoves(move.getStartPosition());
+        var possibleMoves=validMoves(startPos);
         if(possibleMoves==null||!possibleMoves.contains(move)){
             throw new InvalidMoveException("Invalid move: "+move.toString());
         }
@@ -170,19 +181,35 @@ public class ChessGame {
         }
         else{
             var movedPiece=board.movePiece(move);
-            //Update the turn
-            curPlayer = curPlayer==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE;
             //If the piece is a king, update the king variable to the new one
             if(movedPiece!=null&&movedPiece.getPieceType()== ChessPiece.PieceType.KING){
+                //handle castling(if it's a castle, move the rook too. Regardless, set that team's variable for if the king can castle to false
                 if(movedPiece.getTeamColor()==TeamColor.BLACK){
                     blackKing=movedPiece;
                 }
                 else{
                     whiteKing=movedPiece;
                 }
-
-
             }
+            //handle en passant (if it's a pawn double moving, store it in the en passant variable. Otherwise reset en passant variable)
+            if(movedPiece.getPieceType()== ChessPiece.PieceType.PAWN){
+                if(Math.abs(endPos.getRow()-startPos.getRow())==2){
+                    enPassantPos=new ChessPosition(startPos.getRow()+1,startPos.getColumn());
+                }
+                else{
+                    if(move.getEndPosition().equals(enPassantPos)){
+                        //additional checks
+                        board.removePiece(new ChessPosition(startPos.getRow(),endPos.getColumn()));
+                    }
+                    enPassantPos=null;
+                }
+            }
+            else{
+                enPassantPos=null;
+            }
+
+            //Update the turn
+            curPlayer = curPlayer==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE;
         }
     }
 
