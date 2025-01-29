@@ -194,7 +194,8 @@ public class ChessGame {
             //handle en passant (if it's a pawn double moving, store it in the en passant variable. Otherwise reset en passant variable)
             if(movedPiece.getPieceType()== ChessPiece.PieceType.PAWN){
                 if(Math.abs(endPos.getRow()-startPos.getRow())==2){
-                    enPassantPos=new ChessPosition(startPos.getRow()+1,startPos.getColumn());
+                    int mult = curPlayer==TeamColor.BLACK?-1:1;
+                    enPassantPos=new ChessPosition(startPos.getRow()+mult,startPos.getColumn());
                 }
                 else{
                     if(move.getEndPosition().equals(enPassantPos)){
