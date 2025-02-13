@@ -1,8 +1,20 @@
 package server;
 
+import Handler.*;
+import dataaccess.localImplementation.MockDatabase;
 import spark.*;
 
 public class Server {
+
+    //ONLY FOR TESTING
+    MockDatabase testDB;
+
+    ClearHandler clearHandler;
+
+    public Server(){
+        testDB = new MockDatabase();
+        clearHandler = new ClearHandler(testDB);
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);

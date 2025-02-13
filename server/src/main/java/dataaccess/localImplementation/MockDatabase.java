@@ -1,20 +1,25 @@
 package dataaccess.localImplementation;
 
-import dataaccess.interfaces.*;
 import network.dataModels.AuthData;
 import network.dataModels.GameData;
 import network.dataModels.UserData;
 
-import java.util.Dictionary;
+import java.util.TreeMap;
 
 /**
  * A class for mocking a database, storing the data in memory. FOr use with local implementations of the DAO interface
  */
-public class mockDatabase {
+public class MockDatabase {
     //Key is uuid to AuthData
-    Dictionary<String, AuthData> authTokens;
+    TreeMap<String, AuthData> authTokens;
     //Key is game id
-    Dictionary<Integer, GameData> games;
+    TreeMap<Integer, GameData> games;
     //Stores users by username
-    Dictionary<String, UserData> users;
+    TreeMap<String, UserData> users;
+
+    public MockDatabase(){
+        authTokens=new TreeMap<>();
+        games = new TreeMap<>();
+        users = new TreeMap<>();
+    }
 }
