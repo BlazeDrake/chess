@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ClearServiceTest {
 
@@ -41,8 +41,9 @@ class ClearServiceTest {
         auth.put("eeeeeee",new AuthData("eeeeeee","testUser"));
         db.setAuthTokens(auth);
 
-        var games = new TreeMap<Integer, GameData>();
-        games.put(5,new GameData(5,"","","coolGame", new ChessGame()));
+        var games = new ArrayList<>(List.of(
+             new GameData(5,"","","coolGame", new ChessGame())
+        ));
         db.setGames(games);
 
         var users=new TreeMap<String, UserData>();

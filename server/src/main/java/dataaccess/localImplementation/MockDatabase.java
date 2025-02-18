@@ -39,7 +39,7 @@ public class MockDatabase {
         this.authTokens = authTokens;
     }
 
-    public void setGames(TreeMap<Integer, GameData> games) {
+    public void setGames(ArrayList<GameData> games) {
         this.games = games;
     }
 
@@ -49,7 +49,7 @@ public class MockDatabase {
 
     public void reset(){
         authTokens=new TreeMap<>();
-        games = new TreeMap<>();
+        games = new ArrayList<>();
         users = new TreeMap<>();
     }
 }
