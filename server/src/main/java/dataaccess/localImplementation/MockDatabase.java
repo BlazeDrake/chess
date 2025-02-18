@@ -4,6 +4,8 @@ import network.dataModels.AuthData;
 import network.dataModels.GameData;
 import network.dataModels.UserData;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
@@ -11,12 +13,12 @@ import java.util.TreeMap;
  */
 public class MockDatabase {
     //Key is uuid to AuthData
-    TreeMap<String, AuthData> authTokens;
+    private TreeMap<String, AuthData> authTokens;
     //Key is game id
-    TreeMap<Integer, GameData> games;
+    private ArrayList<GameData> games;
 
     //Stores users by username
-    TreeMap<String, UserData> users;
+    private TreeMap<String, UserData> users;
 
     public MockDatabase(){
         reset();
@@ -26,8 +28,8 @@ public class MockDatabase {
         return new TreeMap<>(authTokens);
     }
 
-    public TreeMap<Integer, GameData> getGames(){
-        return new TreeMap<>(games);
+    public ArrayList<GameData> getGames(){
+        return new ArrayList<> (List.copyOf(games));
     }
     public TreeMap<String, UserData> getUsers() {
         return new TreeMap<>(users);
