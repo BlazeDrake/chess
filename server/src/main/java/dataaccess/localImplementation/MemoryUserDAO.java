@@ -16,19 +16,27 @@ public class MemoryUserDAO implements UserDAO {
 
 
     @Override
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException {
+        if(db==null){
+            throw new DataAccessException("Error: Database can't be accessed");
+        }
         return db.getUsers().get(username);
     }
 
     @Override
     public void createUser(UserData data) throws DataAccessException {
-
+        if(db==null){
+            throw new DataAccessException("Error: Database can't be accessed");
+        }
+        var curUsers=db.getUsers();
+        curUsers.put(data.username(),data);
+        db.setUsers(curUsers);
     }
 
     public void clear() throws DataAccessException{
 
         if(db==null){
-            throw new DataAccessException("Database can't be accessed");
+            throw new DataAccessException("Error: Database can't be accessed");
         }
         db.setUsers(new TreeMap<>());
     }

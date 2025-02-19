@@ -3,6 +3,7 @@ package server;
 import Handler.*;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
+import dataaccess.TakenException;
 import dataaccess.localImplementation.MockDatabase;
 import network.ErrorResponse;
 import spark.*;
@@ -17,10 +18,16 @@ public class Server {
     MockDatabase testDB;
 
     ClearHandler clearHandler;
+    RegisterHandler registerHandler;
+
+    Gson gson;
 
     public Server(){
         testDB = new MockDatabase();
         clearHandler = new ClearHandler(testDB);
+        registerHandler = new RegisterHandler(testDB);
+
+        gson=new Gson();
     }
 
     public int run(int desiredPort) {
@@ -29,13 +36,19 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-        Spark.delete("/db",(req,res)->handleRequest(req,res,(reqIn,resIn)->clearHandler.clear(reqIn,resIn)));
+        registerEndpoints();
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
 
         Spark.awaitInitialization();
         return Spark.port();
+    }
+
+    private void registerEndpoints() {
+        Spark.post("/user",(req,res)->handleRequest(req,res,(reqIn,resIn)->registerHandler.register(reqIn,resIn,gson)));
+
+        Spark.delete("/db",(req,res)->handleRequest(req,res,(reqIn,resIn)->clearHandler.clear(reqIn,resIn)));
     }
 
     public void stop() {
@@ -47,11 +60,15 @@ public class Server {
         try{
             return predicate.handle(req,res);
         }
+        catch(TakenException ex){
+            res.status(403);
+            var error = new ErrorResponse(ex.getMessage());
+            return gson.toJson(error);
+        }
         catch(DataAccessException ex){
-            var serializer=new Gson();
             res.status(500);
             var error = new ErrorResponse(ex.getMessage());
-            return serializer.toJson(error);
+            return gson.toJson(error);
         }
     }
 }

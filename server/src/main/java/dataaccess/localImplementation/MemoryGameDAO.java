@@ -26,6 +26,9 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public GameData getGame(AuthData data, int id) throws DataAccessException {
+        if(db==null){
+            throw new DataAccessException("Error: Database can't be accessed");
+        }
         return null;
     }
 
@@ -37,7 +40,7 @@ public class MemoryGameDAO implements GameDAO {
     public void clear() throws DataAccessException{
 
         if(db==null){
-            throw new DataAccessException("Database can't be accessed");
+            throw new DataAccessException("Error: Database can't be accessed");
         }
         db.setGames(new ArrayList<>());
     }

@@ -14,12 +14,20 @@ public class MemoryAuthDAO  implements AuthDAO{
     }
     @Override
     public void createAuth(AuthData data) throws DataAccessException {
-
+        if(db==null){
+            throw new DataAccessException("Error: Database can't be accessed");
+        }
+        var curAuth=db.getAuthTokens();
+        curAuth.put(data.authToken(),data);
+        db.setAuthTokens(curAuth);
     }
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        return null;
+        if(db==null){
+            throw new DataAccessException("Error: Database can't be accessed");
+        }
+        return db.getAuthTokens().get(authToken);
     }
 
     @Override
@@ -30,7 +38,7 @@ public class MemoryAuthDAO  implements AuthDAO{
     @Override
     public void clear() throws DataAccessException{
         if(db==null){
-            throw new DataAccessException("Database can't be accessed");
+            throw new DataAccessException("Error: Database can't be accessed");
         }
         db.setAuthTokens(new TreeMap<>());
     }
