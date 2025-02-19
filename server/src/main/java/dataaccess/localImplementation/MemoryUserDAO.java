@@ -4,6 +4,8 @@ import dataaccess.DataAccessException;
 import dataaccess.interfaces.UserDAO;
 import network.dataModels.UserData;
 
+import java.util.TreeMap;
+
 public class MemoryUserDAO implements UserDAO {
 
     MockDatabase db;
@@ -12,10 +14,6 @@ public class MemoryUserDAO implements UserDAO {
         this.db=db;
     }
 
-    @Override
-    public int authorizeUser(String username, String password) throws DataAccessException {
-        return 0;
-    }
 
     @Override
     public UserData getUser(String username) {
@@ -25,5 +23,13 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public void createUser(UserData data) throws DataAccessException {
 
+    }
+
+    public void clear() throws DataAccessException{
+
+        if(db==null){
+            throw new DataAccessException("Database can't be accessed");
+        }
+        db.setUsers(new TreeMap<>());
     }
 }

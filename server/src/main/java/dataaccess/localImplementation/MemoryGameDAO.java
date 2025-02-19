@@ -33,4 +33,12 @@ public class MemoryGameDAO implements GameDAO {
     public void updateGame(GameData data) throws DataAccessException {
 
     }
+
+    public void clear() throws DataAccessException{
+
+        if(db==null){
+            throw new DataAccessException("Database can't be accessed");
+        }
+        db.setGames(new ArrayList<>());
+    }
 }
