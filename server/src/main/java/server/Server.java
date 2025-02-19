@@ -4,6 +4,7 @@ import Handler.*;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.TakenException;
+import dataaccess.UnauthorizedException;
 import dataaccess.localImplementation.MockDatabase;
 import network.ErrorResponse;
 import spark.*;
@@ -59,6 +60,11 @@ public class Server {
     private Object handleRequest(Request req, Response res, RequestPredicate predicate){
         try{
             return predicate.handle(req,res);
+        }
+        catch(UnauthorizedException ex){
+            res.status(401);
+            var error = new ErrorResponse(ex.getMessage());
+            return gson.toJson(error);
         }
         catch(TakenException ex){
             res.status(403);
