@@ -20,6 +20,7 @@ public class Server {
 
     ClearHandler clearHandler;
     RegisterHandler registerHandler;
+    LoginHandler loginHandler;
 
     Gson gson;
 
@@ -27,6 +28,7 @@ public class Server {
         testDB = new MockDatabase();
         clearHandler = new ClearHandler(testDB);
         registerHandler = new RegisterHandler(testDB);
+        loginHandler = new LoginHandler(testDB);
 
         gson=new Gson();
     }
@@ -48,6 +50,7 @@ public class Server {
 
     private void registerEndpoints() {
         Spark.post("/user",(req,res)->handleRequest(req,res,(reqIn,resIn)->registerHandler.register(reqIn,resIn,gson)));
+        Spark.post("/session",(req,res)->handleRequest(req,res,(reqIn,resIn)->loginHandler.login(reqIn,resIn,gson)));
 
         Spark.delete("/db",(req,res)->handleRequest(req,res,(reqIn,resIn)->clearHandler.clear(reqIn,resIn)));
     }
