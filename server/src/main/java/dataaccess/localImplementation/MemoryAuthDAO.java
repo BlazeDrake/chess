@@ -32,7 +32,13 @@ public class MemoryAuthDAO  implements AuthDAO{
 
     @Override
     public void deleteAuth(AuthData data) throws DataAccessException {
-
+        if(db==null){
+            throw new DataAccessException("Error: Database can't be accessed");
+        }
+        var tokens=db.getAuthTokens();
+        var key=data.authToken();
+        tokens.remove(key);
+        db.setAuthTokens(tokens);
     }
 
     @Override

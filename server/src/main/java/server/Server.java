@@ -16,19 +16,21 @@ public class Server {
         String handle(Request req, Response res) throws DataAccessException;
     }
     //ONLY FOR TESTING
-    MockDatabase testDB;
+    private MockDatabase testDB;
 
-    ClearHandler clearHandler;
-    RegisterHandler registerHandler;
-    LoginHandler loginHandler;
+    private ClearHandler clearHandler;
+    private RegisterHandler registerHandler;
+    private LoginHandler loginHandler;
+    private LogoutHandler logoutHandler;
 
-    Gson gson;
+    private Gson gson;
 
     public Server(){
         testDB = new MockDatabase();
         clearHandler = new ClearHandler(testDB);
         registerHandler = new RegisterHandler(testDB);
         loginHandler = new LoginHandler(testDB);
+        logoutHandler = new LogoutHandler(testDB);
 
         gson=new Gson();
     }
@@ -51,6 +53,7 @@ public class Server {
     private void registerEndpoints() {
         Spark.post("/user",(req,res)->handleRequest(req,res,(reqIn,resIn)->registerHandler.register(reqIn,resIn,gson)));
         Spark.post("/session",(req,res)->handleRequest(req,res,(reqIn,resIn)->loginHandler.login(reqIn,resIn,gson)));
+        Spark.delete("/session",(req,res)->handleRequest(req,res,(reqIn,resIn)->logoutHandler.logout(reqIn,resIn)));
 
         Spark.delete("/db",(req,res)->handleRequest(req,res,(reqIn,resIn)->clearHandler.clear(reqIn,resIn)));
     }
