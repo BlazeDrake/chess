@@ -26,6 +26,10 @@ class ClearServiceTest {
     }
     @Test
     void clearValidEmpty() {
+        runAssertions();
+    }
+
+    private void runAssertions() {
         try{
             clearService.clear();
             Assertions.assertEquals(0,db.getAuthTokens().size());
@@ -35,6 +39,7 @@ class ClearServiceTest {
             Assertions.fail("Exception thrown with clearing");
         }
     }
+
     @Test
     void clearValidNonempty() {
         var auth = new TreeMap<String, AuthData>();
@@ -50,14 +55,7 @@ class ClearServiceTest {
         users.put("user",new UserData("user","e","hi@email.com"));
         db.setUsers(users);
 
-        try{
-            clearService.clear();
-            Assertions.assertEquals(0,db.getAuthTokens().size());
-            Assertions.assertEquals(0,db.getGames().size());
-            Assertions.assertEquals(0,db.getUsers().size());
-        } catch (DataAccessException e) {
-            Assertions.fail("Exception thrown with clearing");
-        }
+        runAssertions();
     }
     @Test
     void clearInvalid() {
