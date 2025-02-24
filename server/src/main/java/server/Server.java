@@ -2,10 +2,10 @@ package server;
 
 import handler.*;
 import com.google.gson.Gson;
-import data_access.DataAccessException;
-import data_access.TakenException;
-import data_access.UnauthorizedException;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.TakenException;
+import dataaccess.UnauthorizedException;
+import dataaccess.localimplementation.MockDatabase;
 import network.ErrorResponse;
 import spark.*;
 

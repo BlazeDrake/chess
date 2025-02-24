@@ -1,7 +1,7 @@
-package data_access.local_implementation;
+package dataaccess.localimplementation;
 
-import data_access.DataAccessException;
-import data_access.interfaces.GameDAO;
+import dataaccess.DataAccessException;
+import dataaccess.interfaces.GameDAO;
 import network.data_models.AuthData;
 import network.data_models.GameData;
 

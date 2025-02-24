@@ -1,8 +1,8 @@
 package handler;
 
 import service.LogoutService;
-import data_access.DataAccessException;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.localimplementation.MockDatabase;
 import network.requests.LogoutRequest;
 import spark.Request;
 import spark.Response;

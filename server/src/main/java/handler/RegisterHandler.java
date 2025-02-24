@@ -2,8 +2,8 @@ package handler;
 
 import service.RegisterService;
 import com.google.gson.Gson;
-import data_access.DataAccessException;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.localimplementation.MockDatabase;
 import network.data_models.UserData;
 import network.requests.RegisterRequest;
 import spark.Request;

@@ -1,6 +1,6 @@
 package handler;
 
-import data_access.local_implementation.MockDatabase;
+import dataaccess.localimplementation.MockDatabase;
 
 public class JoinGameHandler {
     MockDatabase db;

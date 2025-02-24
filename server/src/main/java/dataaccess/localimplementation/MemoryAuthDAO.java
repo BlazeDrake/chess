@@ -1,6 +1,6 @@
-package data_access.local_implementation;
-import data_access.DataAccessException;
-import data_access.interfaces.AuthDAO;
+package dataaccess.localimplementation;
+import dataaccess.DataAccessException;
+import dataaccess.interfaces.AuthDAO;
 import network.data_models.AuthData;
 
 import java.util.TreeMap;

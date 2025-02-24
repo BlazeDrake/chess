@@ -1,8 +1,8 @@
 package service;
 
 import chess.ChessGame;
-import data_access.DataAccessException;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.localimplementation.MockDatabase;
 import network.data_models.AuthData;
 import network.data_models.GameData;
 import network.data_models.UserData;

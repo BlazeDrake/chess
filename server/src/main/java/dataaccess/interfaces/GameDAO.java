@@ -1,6 +1,6 @@
-package data_access.interfaces;
+package dataaccess.interfaces;
 
-import data_access.DataAccessException;
+import dataaccess.DataAccessException;
 import network.data_models.AuthData;
 import network.data_models.GameData;
 

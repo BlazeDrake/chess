@@ -1,6 +1,6 @@
-package data_access.interfaces;
+package dataaccess.interfaces;
 
-import data_access.DataAccessException;
+import dataaccess.DataAccessException;
 import network.data_models.UserData;
 
 public interface UserDAO {

@@ -1,9 +1,9 @@
 package service;
 
-import data_access.DataAccessException;
-import data_access.TakenException;
-import data_access.local_implementation.MemoryUserDAO;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.TakenException;
+import dataaccess.localimplementation.MemoryUserDAO;
+import dataaccess.localimplementation.MockDatabase;
 import network.data_models.UserData;
 import network.requests.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,14 +24,14 @@ class RegisterServiceTest {
     }
 
     @Test
-    public void TestNullDatabase(){
+    public void testNullDatabase(){
         service = new RegisterService(null);
         var request=new RegisterRequest(new UserData("joe","password","email@test.com"));
         assertThrows(DataAccessException.class,()->service.register(request));
     }
 
     @Test
-    public void TestAddUser(){
+    public void testAddUser(){
         var usersToAdd = new ArrayList<UserData>(List.of(
                 new UserData("username","password","email@test,com"),
                 new UserData("next","cool","email@test,com"),
@@ -53,7 +53,7 @@ class RegisterServiceTest {
     }
 
     @Test
-    public void TestTakenUsername(){
+    public void testTakenUsername(){
 
         var user1= new UserData("username","password","email@test,com");
         var user2= new UserData("username","cool","email@test,com");

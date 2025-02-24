@@ -1,12 +1,12 @@
 package service;
 
-import data_access.DataAccessException;
-import data_access.UnauthorizedException;
-import data_access.interfaces.AuthDAO;
-import data_access.interfaces.UserDAO;
-import data_access.local_implementation.MemoryAuthDAO;
-import data_access.local_implementation.MemoryUserDAO;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.UnauthorizedException;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.UserDAO;
+import dataaccess.localimplementation.MemoryAuthDAO;
+import dataaccess.localimplementation.MemoryUserDAO;
+import dataaccess.localimplementation.MockDatabase;
 import network.requests.LoginRequest;
 import network.results.LoginResult;
 

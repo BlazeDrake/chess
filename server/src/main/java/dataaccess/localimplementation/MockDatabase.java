@@ -1,4 +1,4 @@
-package data_access.local_implementation;
+package dataaccess.localimplementation;
 
 import network.data_models.AuthData;
 import network.data_models.GameData;

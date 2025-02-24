@@ -2,8 +2,8 @@ package handler;
 
 import service.ListGamesService;
 import com.google.gson.Gson;
-import data_access.DataAccessException;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.localimplementation.MockDatabase;
 import network.requests.ListGamesRequest;
 import spark.Request;
 import spark.Response;

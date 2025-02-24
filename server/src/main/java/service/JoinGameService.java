@@ -1,6 +1,6 @@
 package service;
 
-import data_access.local_implementation.MockDatabase;
+import dataaccess.localimplementation.MockDatabase;
 
 public class JoinGameService {
     MockDatabase db;

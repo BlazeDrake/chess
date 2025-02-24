@@ -1,8 +1,8 @@
 package service;
 
-import data_access.DataAccessException;
-import data_access.UnauthorizedException;
-import data_access.local_implementation.MockDatabase;
+import dataaccess.DataAccessException;
+import dataaccess.UnauthorizedException;
+import dataaccess.localimplementation.MockDatabase;
 import network.data_models.UserData;
 import network.requests.LoginRequest;
 import org.junit.jupiter.api.BeforeEach;
