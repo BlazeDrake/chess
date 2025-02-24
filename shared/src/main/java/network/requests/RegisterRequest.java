@@ -1,6 +1,6 @@
 package network.requests;
 
-import network.dataModels.UserData;
+import network.data_models.UserData;
 
 public record RegisterRequest(UserData userData) {
 }
