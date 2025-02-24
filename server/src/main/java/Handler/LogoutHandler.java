@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.localImplementation.MockDatabase;
 import network.requests.LogoutRequest;
-import org.eclipse.jetty.util.log.Log;
 import spark.Request;
 import spark.Response;
 

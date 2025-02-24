@@ -23,6 +23,10 @@ public class Server {
     private LoginHandler loginHandler;
     private LogoutHandler logoutHandler;
 
+    private ListGamesHandler listGamesHandler;
+    private JoinGameHandler joinGameHandler;
+    private CreateGameHandler createGameHandler;
+
     private Gson gson;
 
     public Server(){
@@ -31,6 +35,10 @@ public class Server {
         registerHandler = new RegisterHandler(testDB);
         loginHandler = new LoginHandler(testDB);
         logoutHandler = new LogoutHandler(testDB);
+
+        listGamesHandler = new ListGamesHandler(testDB);
+        joinGameHandler = new JoinGameHandler(testDB);
+        createGameHandler = new CreateGameHandler(testDB);
 
         gson=new Gson();
     }
@@ -54,6 +62,8 @@ public class Server {
         Spark.post("/user",(req,res)->handleRequest(req,res,(reqIn,resIn)->registerHandler.register(reqIn,resIn,gson)));
         Spark.post("/session",(req,res)->handleRequest(req,res,(reqIn,resIn)->loginHandler.login(reqIn,resIn,gson)));
         Spark.delete("/session",(req,res)->handleRequest(req,res,(reqIn,resIn)->logoutHandler.logout(reqIn,resIn)));
+
+        Spark.get("/game",(req,res)->handleRequest(req,res,(reqIn,resIn)->listGamesHandler.listGames(reqIn,resIn,gson)));
 
         Spark.delete("/db",(req,res)->handleRequest(req,res,(reqIn,resIn)->clearHandler.clear(reqIn,resIn)));
     }
