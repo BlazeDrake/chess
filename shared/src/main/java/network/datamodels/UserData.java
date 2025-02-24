@@ -1,4 +1,4 @@
-package network.data_models;
+package network.datamodels;
 
 public record UserData(String username, String password, String email) {
 }

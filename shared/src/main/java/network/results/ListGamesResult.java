@@ -1,6 +1,6 @@
 package network.results;
 
-import network.data_models.GameData;
+import network.datamodels.GameData;
 
 import java.util.Collection;
 

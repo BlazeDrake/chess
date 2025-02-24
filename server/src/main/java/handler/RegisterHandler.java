@@ -4,7 +4,7 @@ import service.RegisterService;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.localimplementation.MockDatabase;
-import network.data_models.UserData;
+import network.datamodels.UserData;
 import network.requests.RegisterRequest;
 import spark.Request;
 import spark.Response;

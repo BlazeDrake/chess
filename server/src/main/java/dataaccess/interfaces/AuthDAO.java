@@ -1,7 +1,7 @@
 package dataaccess.interfaces;
 
 import dataaccess.DataAccessException;
-import network.data_models.AuthData;
+import network.datamodels.AuthData;
 
 import java.util.UUID;
 

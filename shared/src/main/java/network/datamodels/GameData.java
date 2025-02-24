@@ -1,4 +1,4 @@
-package network.data_models;
+package network.datamodels;
 
 import chess.ChessGame;
 

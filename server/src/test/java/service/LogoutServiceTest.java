@@ -3,7 +3,7 @@ package service;
 import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import dataaccess.localimplementation.MockDatabase;
-import network.data_models.AuthData;
+import network.datamodels.AuthData;
 import network.requests.LogoutRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

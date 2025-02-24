@@ -1,7 +1,7 @@
 package dataaccess.interfaces;
 
 import dataaccess.DataAccessException;
-import network.data_models.UserData;
+import network.datamodels.UserData;
 
 public interface UserDAO {
     UserData getUser(String username) throws DataAccessException;

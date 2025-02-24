@@ -2,8 +2,8 @@ package dataaccess.localimplementation;
 
 import dataaccess.DataAccessException;
 import dataaccess.interfaces.GameDAO;
-import network.data_models.AuthData;
-import network.data_models.GameData;
+import network.datamodels.AuthData;
+import network.datamodels.GameData;
 
 import java.util.ArrayList;
 import java.util.Collection;

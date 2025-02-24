@@ -1,8 +1,8 @@
 package dataaccess.interfaces;
 
 import dataaccess.DataAccessException;
-import network.data_models.AuthData;
-import network.data_models.GameData;
+import network.datamodels.AuthData;
+import network.datamodels.GameData;
 
 import java.util.Collection;
 

@@ -1,8 +1,8 @@
 package dataaccess.localimplementation;
 
-import network.data_models.AuthData;
-import network.data_models.GameData;
-import network.data_models.UserData;
+import network.datamodels.AuthData;
+import network.datamodels.GameData;
+import network.datamodels.UserData;
 
 import java.util.ArrayList;
 import java.util.List;

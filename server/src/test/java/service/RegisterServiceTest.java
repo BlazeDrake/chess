@@ -4,7 +4,7 @@ import dataaccess.DataAccessException;
 import dataaccess.TakenException;
 import dataaccess.localimplementation.MemoryUserDAO;
 import dataaccess.localimplementation.MockDatabase;
-import network.data_models.UserData;
+import network.datamodels.UserData;
 import network.requests.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ class RegisterServiceTest {
                 assertNotNull(testDao.getUser(user.username()));
             }
         } catch (DataAccessException e) {
-            fail("Unexpected error: "+e.getMessage());
+            fail("Unexpect ed error: "+e.getMessage());
         }
     }
 

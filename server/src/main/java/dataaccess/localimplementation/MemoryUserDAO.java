@@ -2,7 +2,7 @@ package dataaccess.localimplementation;
 
 import dataaccess.DataAccessException;
 import dataaccess.interfaces.UserDAO;
-import network.data_models.UserData;
+import network.datamodels.UserData;
 
 import java.util.TreeMap;
 
