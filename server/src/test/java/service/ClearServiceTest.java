@@ -20,21 +20,22 @@ class ClearServiceTest {
     ClearService clearService;
 
     @BeforeEach
-    void setup(){
-        db=new MockDatabase();
+    void setup() {
+        db = new MockDatabase();
         clearService = new ClearService(db);
     }
+
     @Test
     void clearValidEmpty() {
         runAssertions();
     }
 
     private void runAssertions() {
-        try{
+        try {
             clearService.clear();
-            Assertions.assertEquals(0,db.getAuthTokens().size());
-            Assertions.assertEquals(0,db.getGames().size());
-            Assertions.assertEquals(0,db.getUsers().size());
+            Assertions.assertEquals(0, db.getAuthTokens().size());
+            Assertions.assertEquals(0, db.getGames().size());
+            Assertions.assertEquals(0, db.getUsers().size());
         } catch (DataAccessException e) {
             Assertions.fail("Exception thrown with clearing");
         }
@@ -43,23 +44,24 @@ class ClearServiceTest {
     @Test
     void clearValidNonempty() {
         var auth = new TreeMap<String, AuthData>();
-        auth.put("eeeeeee",new AuthData("eeeeeee","testUser"));
+        auth.put("eeeeeee", new AuthData("eeeeeee", "testUser"));
         db.setAuthTokens(auth);
 
         var games = new ArrayList<>(List.of(
-             new GameData(5,"","","coolGame", new ChessGame())
+                new GameData(5, null, null, "coolGame", new ChessGame())
         ));
         db.setGames(games);
 
-        var users=new TreeMap<String, UserData>();
-        users.put("user",new UserData("user","e","hi@email.com"));
+        var users = new TreeMap<String, UserData>();
+        users.put("user", new UserData("user", "e", "hi@email.com"));
         db.setUsers(users);
 
         runAssertions();
     }
+
     @Test
     void clearInvalid() {
         clearService = new ClearService(null);
-        Assertions.assertThrows(DataAccessException.class,()->clearService.clear());
+        Assertions.assertThrows(DataAccessException.class, () -> clearService.clear());
     }
 }

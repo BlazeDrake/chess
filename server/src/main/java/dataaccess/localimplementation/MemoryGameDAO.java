@@ -24,8 +24,8 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public int createGame(AuthData auth, String gameName) throws DataAccessException {
         var games = db.getGames();
-        int id = games.size();
-        games.add(new GameData(id, "", "", gameName, new ChessGame()));
+        int id = games.size() + 1;
+        games.add(new GameData(id, null, null, gameName, new ChessGame()));
         db.setGames(games);
         return id;
     }
@@ -35,12 +35,24 @@ public class MemoryGameDAO implements GameDAO {
         if (db == null) {
             throw new DataAccessException("Error: Database can't be accessed");
         }
-        return null;
+        var games = db.getGames();
+
+        if (id > games.size() || id <= 0) {
+            throw new DataAccessException("Error: Game with ID " + id + " doesn't exist");
+        }
+        return games.get(id - 1);
     }
 
     @Override
     public void updateGame(GameData data) throws DataAccessException {
+        var games = db.getGames();
+        var id = data.gameID();
 
+        if (id > games.size() || id <= 0) {
+            throw new DataAccessException("Error: Game with ID " + id + " doesn't exist");
+        }
+        games.set(id - 1, data);
+        db.setGames(games);
     }
 
     public void clear() throws DataAccessException {

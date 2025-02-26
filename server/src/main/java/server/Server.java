@@ -67,6 +67,7 @@ public class Server {
 
         Spark.get("/game", (req, res) -> handleRequest(req, res, (reqIn, resIn) -> listGamesHandler.listGames(reqIn, resIn, gson)));
         Spark.post("/game", (req, res) -> handleRequest(req, res, (reqIn, resIn) -> createGameHandler.createGame(reqIn, resIn, gson)));
+        Spark.put("/game", (req, res) -> handleRequest(req, res, (reqIn, resIn) -> joinGameHandler.joinGame(reqIn, resIn, gson)));
 
         Spark.delete("/db", (req, res) -> handleRequest(req, res, (reqIn, resIn) -> clearHandler.clear(reqIn, resIn)));
     }
