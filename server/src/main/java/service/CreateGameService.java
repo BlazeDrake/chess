@@ -23,7 +23,7 @@ public class CreateGameService {
     }
 
     public CreateGameResult createGame(CreateGameRequest request) throws DataAccessException {
-        if (request.authToken() == null || request.gameName() == null) {
+        if (request == null || request.authToken() == null || request.gameName() == null) {
             throw new BadRequestException("Error: bad request");
         }
 

@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
 import dataaccess.TakenException;
 import dataaccess.interfaces.AuthDAO;
@@ -14,21 +15,25 @@ public class RegisterService {
     MockDatabase db;
     UserDAO userDAO;
     AuthDAO authDAO;
-    public RegisterService(MockDatabase db){
-        this.db=db;
+
+    public RegisterService(MockDatabase db) {
+        this.db = db;
         userDAO = new MemoryUserDAO(db);
         authDAO = new MemoryAuthDAO(db);
     }
 
     public RegisterResult register(RegisterRequest request) throws DataAccessException {
-        var userData=request.userData();
-        if(userDAO.getUser(userData.username())!=null){
-            throw new TakenException("Error: already taken");
+        var userData = request.userData();
+        if (userData == null || userData.email() == null || userData.password() == null || userData.username() == null) {
+            throw new BadRequestException("Error: bad request");
         }
-        else{
+
+        if (userDAO.getUser(userData.username()) != null) {
+            throw new TakenException("Error: already taken");
+        } else {
             userDAO.createUser(userData);
 
-            var token=AuthDAO.generateAuth(userData.username());
+            var token = AuthDAO.generateAuth(userData.username());
             authDAO.createAuth(token);
             return new RegisterResult(userData.username(), token.authToken());
         }
