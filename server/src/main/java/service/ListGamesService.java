@@ -14,17 +14,15 @@ public class ListGamesService {
     MockDatabase db;
     AuthDAO authDAO;
     GameDAO gameDAO;
-    public ListGamesService(MockDatabase db){
-        this.db=db;
+
+    public ListGamesService(MockDatabase db) {
+        this.db = db;
         gameDAO = new MemoryGameDAO(db);
         authDAO = new MemoryAuthDAO(db);
     }
 
     public ListGamesResult listGames(ListGamesRequest request) throws DataAccessException {
-        var auth=authDAO.getAuth(request.authToken());
-        if(auth==null){
-            throw new UnauthorizedException("Error: unauthorized");
-        }
+        var auth = authDAO.authenticate(request.authToken());
         return new ListGamesResult(gameDAO.listGames(auth.authToken()));
     }
 }
