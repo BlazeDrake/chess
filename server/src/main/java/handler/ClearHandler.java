@@ -7,14 +7,13 @@ import spark.Request;
 import spark.Response;
 
 public class ClearHandler {
-    MockDatabase db;
     ClearService service;
-    public ClearHandler(MockDatabase db){
-        this.db=db;
+
+    public ClearHandler(MockDatabase db) {
         service = new ClearService(db);
     }
 
-    public String clear(Request req, Response res) throws DataAccessException{
+    public String clear(Request req, Response res) throws DataAccessException {
         service.clear();
         return "{}";
     }

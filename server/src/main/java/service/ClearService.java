@@ -10,12 +10,11 @@ import dataaccess.localimplementation.MemoryUserDAO;
 import dataaccess.localimplementation.MockDatabase;
 
 public class ClearService {
-    MockDatabase db;
     private AuthDAO authDao;
     private GameDAO gameDAO;
     private UserDAO userDAO;
-    public ClearService(MockDatabase db){
-        this.db=db;
+
+    public ClearService(MockDatabase db) {
         authDao = new MemoryAuthDAO(db);
         gameDAO = new MemoryGameDAO(db);
         userDAO = new MemoryUserDAO(db);

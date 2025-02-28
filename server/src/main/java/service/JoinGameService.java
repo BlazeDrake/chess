@@ -20,12 +20,10 @@ public class JoinGameService {
             "BLACK"
     ));
 
-    MockDatabase db;
     private AuthDAO authDAO;
     private GameDAO gameDAO;
 
     public JoinGameService(MockDatabase db) {
-        this.db = db;
         authDAO = new MemoryAuthDAO(db);
         gameDAO = new MemoryGameDAO(db);
     }

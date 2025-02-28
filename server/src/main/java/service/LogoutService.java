@@ -7,12 +7,9 @@ import dataaccess.localimplementation.MockDatabase;
 import network.requests.LogoutRequest;
 
 public class LogoutService {
-    private MockDatabase db;
     private AuthDAO authDAO;
 
     public LogoutService(MockDatabase db) {
-
-        this.db = db;
         authDAO = new MemoryAuthDAO(db);
     }
 

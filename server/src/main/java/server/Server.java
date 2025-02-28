@@ -17,9 +17,6 @@ public class Server {
         String handle(Request req, Response res) throws DataAccessException;
     }
 
-    //ONLY FOR TESTING
-    private MockDatabase testDB;
-
     private ClearHandler clearHandler;
     private RegisterHandler registerHandler;
     private LoginHandler loginHandler;
@@ -32,7 +29,7 @@ public class Server {
     private Gson gson;
 
     public Server() {
-        testDB = new MockDatabase();
+        var testDB = new MockDatabase();
         clearHandler = new ClearHandler(testDB);
         registerHandler = new RegisterHandler(testDB);
         loginHandler = new LoginHandler(testDB);

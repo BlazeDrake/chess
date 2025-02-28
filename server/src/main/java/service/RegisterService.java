@@ -12,12 +12,10 @@ import network.requests.RegisterRequest;
 import network.results.RegisterResult;
 
 public class RegisterService {
-    MockDatabase db;
     UserDAO userDAO;
     AuthDAO authDAO;
 
     public RegisterService(MockDatabase db) {
-        this.db = db;
         userDAO = new MemoryUserDAO(db);
         authDAO = new MemoryAuthDAO(db);
     }
@@ -30,7 +28,8 @@ public class RegisterService {
 
         if (userDAO.getUser(userData.username()) != null) {
             throw new TakenException("Error: already taken");
-        } else {
+        }
+        else {
             userDAO.createUser(userData);
 
             var token = AuthDAO.generateAuth(userData.username());

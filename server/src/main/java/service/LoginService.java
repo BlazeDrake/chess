@@ -11,27 +11,24 @@ import network.requests.LoginRequest;
 import network.results.LoginResult;
 
 public class LoginService {
-    MockDatabase db;
     UserDAO loginDAO;
     AuthDAO authDAO;
-    public LoginService(MockDatabase db){
 
-        this.db=db;
+    public LoginService(MockDatabase db) {
         loginDAO = new MemoryUserDAO(db);
         authDAO = new MemoryAuthDAO(db);
     }
+
     public LoginResult login(LoginRequest request) throws DataAccessException {
         var user = loginDAO.getUser(request.username());
-        if(user ==null || !request.password().equals(user.password())){
+        if (user == null || !request.password().equals(user.password())) {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
         var auth = AuthDAO.generateAuth(request.username());
 
-        var authTokens=db.getAuthTokens();
-        authTokens.put(auth.authToken(),auth);
-        db.setAuthTokens(authTokens);
+        authDAO.createAuth(auth);
 
-        return new LoginResult(auth.username(),auth.authToken());
+        return new LoginResult(auth.username(), auth.authToken());
     }
 }

@@ -9,12 +9,10 @@ import spark.Request;
 import spark.Response;
 
 public class JoinGameHandler {
-    MockDatabase db;
     JoinGameService service;
 
     public JoinGameHandler(MockDatabase db) {
 
-        this.db = db;
         service = new JoinGameService(db);
     }
 

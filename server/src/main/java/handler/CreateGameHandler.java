@@ -10,11 +10,9 @@ import spark.Request;
 import spark.Response;
 
 public class CreateGameHandler {
-    private MockDatabase db;
     private CreateGameService service;
 
     public CreateGameHandler(MockDatabase db) {
-        this.db = db;
         service = new CreateGameService(db);
     }
 

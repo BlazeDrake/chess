@@ -11,13 +11,10 @@ import network.requests.CreateGameRequest;
 import network.results.CreateGameResult;
 
 public class CreateGameService {
-    MockDatabase db;
     AuthDAO authDAO;
     GameDAO gameDAO;
 
     public CreateGameService(MockDatabase db) {
-
-        this.db = db;
         authDAO = new MemoryAuthDAO(db);
         gameDAO = new MemoryGameDAO(db);
     }

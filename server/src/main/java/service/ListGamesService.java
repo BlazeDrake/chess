@@ -11,12 +11,10 @@ import network.requests.ListGamesRequest;
 import network.results.ListGamesResult;
 
 public class ListGamesService {
-    MockDatabase db;
     AuthDAO authDAO;
     GameDAO gameDAO;
 
     public ListGamesService(MockDatabase db) {
-        this.db = db;
         gameDAO = new MemoryGameDAO(db);
         authDAO = new MemoryAuthDAO(db);
     }
