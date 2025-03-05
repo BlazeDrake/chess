@@ -6,7 +6,7 @@ import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.localimplementation.MemoryAuthDAO;
 import dataaccess.localimplementation.MemoryGameDAO;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.CreateGameRequest;
 import network.results.CreateGameResult;
 
@@ -14,7 +14,7 @@ public class CreateGameService {
     AuthDAO authDAO;
     GameDAO gameDAO;
 
-    public CreateGameService(MockDatabase db) {
+    public CreateGameService() {
         authDAO = new MemoryAuthDAO(db);
         gameDAO = new MemoryGameDAO(db);
     }

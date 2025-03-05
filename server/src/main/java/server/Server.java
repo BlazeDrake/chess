@@ -1,12 +1,8 @@
 package server;
 
-import dataaccess.BadRequestException;
+import dataaccess.*;
 import handler.*;
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
-import dataaccess.TakenException;
-import dataaccess.UnauthorizedException;
-import dataaccess.localimplementation.MockDatabase;
 import network.ErrorResponse;
 import spark.*;
 
@@ -29,20 +25,21 @@ public class Server {
     private Gson gson;
 
     public Server() {
-        var testDB = new MockDatabase();
-        clearHandler = new ClearHandler(testDB);
-        registerHandler = new RegisterHandler(testDB);
-        loginHandler = new LoginHandler(testDB);
-        logoutHandler = new LogoutHandler(testDB);
 
-        listGamesHandler = new ListGamesHandler(testDB);
-        joinGameHandler = new JoinGameHandler(testDB);
-        createGameHandler = new CreateGameHandler(testDB);
+        clearHandler = new ClearHandler();
+        registerHandler = new RegisterHandler();
+        loginHandler = new LoginHandler();
+        logoutHandler = new LogoutHandler();
+
+        listGamesHandler = new ListGamesHandler();
+        joinGameHandler = new JoinGameHandler();
+        createGameHandler = new CreateGameHandler();
 
         gson = new Gson();
     }
 
     public int run(int desiredPort) {
+
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");

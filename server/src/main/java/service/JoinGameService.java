@@ -7,7 +7,7 @@ import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.localimplementation.MemoryAuthDAO;
 import dataaccess.localimplementation.MemoryGameDAO;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.datamodels.GameData;
 import network.requests.JoinGameRequest;
 
@@ -23,7 +23,7 @@ public class JoinGameService {
     private AuthDAO authDAO;
     private GameDAO gameDAO;
 
-    public JoinGameService(MockDatabase db) {
+    public JoinGameService() {
         authDAO = new MemoryAuthDAO(db);
         gameDAO = new MemoryGameDAO(db);
     }

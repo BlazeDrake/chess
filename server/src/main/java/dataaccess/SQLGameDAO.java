@@ -1,6 +1,5 @@
-package dataaccess.dbimplementation;
+package dataaccess;
 
-import dataaccess.DataAccessException;
 import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
@@ -9,6 +8,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
+    public SQLGameDAO() {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public Collection<GameData> listGames(String authToken) throws DataAccessException {
         return List.of();

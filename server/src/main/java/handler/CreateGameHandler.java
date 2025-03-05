@@ -3,7 +3,7 @@ package handler;
 import com.google.gson.Gson;
 import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.CreateGameRequest;
 import service.CreateGameService;
 import spark.Request;
@@ -12,7 +12,7 @@ import spark.Response;
 public class CreateGameHandler {
     private CreateGameService service;
 
-    public CreateGameHandler(MockDatabase db) {
+    public CreateGameHandler() {
         service = new CreateGameService(db);
     }
 

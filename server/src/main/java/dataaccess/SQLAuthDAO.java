@@ -1,13 +1,21 @@
-package dataaccess.dbimplementation;
+package dataaccess;
 
-import dataaccess.DataAccessException;
 import dataaccess.interfaces.AuthDAO;
 import network.datamodels.AuthData;
 
 public class SQLAuthDAO implements AuthDAO {
+
+    public SQLAuthDAO() {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void createAuth(AuthData data) throws DataAccessException {
-        
+
     }
 
     @Override

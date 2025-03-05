@@ -1,8 +1,10 @@
 package service;
 
 import dataaccess.DataAccessException;
+import dataaccess.SQLUserDAO;
 import dataaccess.UnauthorizedException;
-import dataaccess.localimplementation.MockDatabase;
+
+import dataaccess.interfaces.UserDAO;
 import network.datamodels.AuthData;
 import network.requests.LogoutRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,31 +16,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LogoutServiceTest {
 
-    private MockDatabase db;
+    private UserDAO userDAO;
     private LogoutService service;
-    @BeforeEach
-    public void setup(){
-        db = new MockDatabase();
-        service= new LogoutService(db);
 
-        var authTokens=new TreeMap<String, AuthData>();
-        authTokens.put("abc123",new AuthData("abc123","syl"));
-        authTokens.put("mmmmmm",new AuthData("mmmmmm","pattern"));
-        db.setAuthTokens(authTokens);
+    @BeforeEach
+    public void setup() {
+        userDAO = new SQLUserDAO();
+        service = new LogoutService();
+
+        var authTokens = new TreeMap<String, AuthData>();
+        authTokens.put("abc123", new AuthData("abc123", "syl"));
+        authTokens.put("mmmmmm", new AuthData("mmmmmm", "pattern"));
 
 
     }
+
     @Test
     public void logoutValid() throws DataAccessException {
 
         service.logout(new LogoutRequest("abc123"));
-        assertEquals(1,db.getAuthTokens().size());
+        assertThrows(UnauthorizedException.class, () -> service.logout(new LogoutRequest("abc123")));
         service.logout(new LogoutRequest("mmmmmm"));
-        assertEquals(0,db.getAuthTokens().size());
+        assertThrows(UnauthorizedException.class, () -> service.logout(new LogoutRequest("mmmmmm")));
     }
 
     @Test
     public void logoutInvalid() {
-        assertThrows(UnauthorizedException.class, ()->service.logout(new LogoutRequest("airsick")));
+        assertThrows(UnauthorizedException.class, () -> service.logout(new LogoutRequest("airsick")));
     }
 }

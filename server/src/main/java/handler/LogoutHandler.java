@@ -2,7 +2,7 @@ package handler;
 
 import service.LogoutService;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.LogoutRequest;
 import spark.Request;
 import spark.Response;
@@ -10,7 +10,7 @@ import spark.Response;
 public class LogoutHandler {
     LogoutService service;
 
-    public LogoutHandler(MockDatabase db) {
+    public LogoutHandler() {
         service = new LogoutService(db);
     }
 

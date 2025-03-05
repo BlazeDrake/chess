@@ -3,7 +3,7 @@ package handler;
 import service.LoginService;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.LoginRequest;
 import spark.Request;
 import spark.Response;
@@ -11,7 +11,7 @@ import spark.Response;
 public class LoginHandler {
     LoginService service;
 
-    public LoginHandler(MockDatabase db) {
+    public LoginHandler() {
         service = new LoginService(db);
     }
 

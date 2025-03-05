@@ -33,8 +33,5 @@ class SQLAuthDAOTest {
     @Test
     void clearValid() {
     }
-
-    @Test
-    void clearInvalid() {
-    }
+    
 }

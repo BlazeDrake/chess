@@ -25,8 +25,4 @@ class SQLUserDAOTest {
     @Test
     void clearValid() {
     }
-
-    @Test
-    void clearInvalid() {
-    }
 }

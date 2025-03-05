@@ -1,8 +1,10 @@
 package service;
 
 import dataaccess.DataAccessException;
+import dataaccess.SQLUserDAO;
 import dataaccess.UnauthorizedException;
-import dataaccess.localimplementation.MockDatabase;
+
+import dataaccess.interfaces.UserDAO;
 import network.datamodels.UserData;
 import network.requests.LoginRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,34 +16,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LoginServiceTest {
 
-    MockDatabase db;
+
     LoginService service;
+    UserDAO userDAO;
 
     @BeforeEach
-    void setup(){
-        db=new MockDatabase();
-        service=new LoginService(db);
+    void setup() throws DataAccessException {
+        service = new LoginService();
+        userDAO = new SQLUserDAO();
 
-        var userData=new TreeMap<String, UserData>();
-        userData.put("nightblood",new UserData("nightblood","evil","ex@roshar.com"));
-        db.setUsers(userData);
+        userDAO.createUser(new UserData("nightblood", "evil", "ex@roshar.com"));
     }
+
     @Test
     void loginValid() throws DataAccessException {
-        var request=new LoginRequest("nightblood","evil");
-        var result=service.login(request);
-        var authTokens=db.getAuthTokens();
+        var request = new LoginRequest("nightblood", "evil");
+        var result = service.login(request);
         assertNotNull(result);
-        assertNotNull(authTokens.get(result.authToken()));
+        assertNotNull(userDAO.getUser("nightblood"));
     }
+
     @Test
     void loginInvalidBadInfo() {
-        var request=new LoginRequest("nightblood","pancakes");
-        assertThrows(UnauthorizedException.class,()->service.login(request));
+        var request = new LoginRequest("nightblood", "pancakes");
+        assertThrows(UnauthorizedException.class, () -> service.login(request));
     }
+
     @Test
     void loginInvalidNonexistent() {
-        var request=new LoginRequest("pattern","lies");
-        assertThrows(UnauthorizedException.class,()->service.login(request));
+        var request = new LoginRequest("pattern", "lies");
+        assertThrows(UnauthorizedException.class, () -> service.login(request));
     }
 }

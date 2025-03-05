@@ -42,7 +42,4 @@ class SQLGameDAOTest {
     void clearValid() {
     }
 
-    @Test
-    void clearInvalid() {
-    }
 }

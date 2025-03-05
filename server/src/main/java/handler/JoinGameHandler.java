@@ -2,7 +2,7 @@ package handler;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.JoinGameRequest;
 import service.JoinGameService;
 import spark.Request;
@@ -11,7 +11,7 @@ import spark.Response;
 public class JoinGameHandler {
     JoinGameService service;
 
-    public JoinGameHandler(MockDatabase db) {
+    public JoinGameHandler() {
 
         service = new JoinGameService(db);
     }

@@ -1,8 +1,11 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+import dataaccess.*;
+
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
+import dataaccess.interfaces.UserDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
@@ -16,52 +19,36 @@ import java.util.TreeMap;
 
 class ClearServiceTest {
 
-    MockDatabase db;
+
     ClearService clearService;
+
+    AuthDAO authDAO;
+    UserDAO userDAO;
+    GameDAO gameDAO;
 
     @BeforeEach
     void setup() {
-        db = new MockDatabase();
-        clearService = new ClearService(db);
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
+
+        clearService = new ClearService();
     }
+
 
     @Test
-    void clearValidEmpty() {
-        runAssertions();
-    }
+    void clearValidNonempty() throws DataAccessException {
+        var auth = new AuthData("eeeeeee", "testUser");
+        authDAO.createAuth(auth);
 
-    private void runAssertions() {
-        try {
-            clearService.clear();
-            Assertions.assertEquals(0, db.getAuthTokens().size());
-            Assertions.assertEquals(0, db.getGames().size());
-            Assertions.assertEquals(0, db.getUsers().size());
-        } catch (DataAccessException e) {
-            Assertions.fail("Exception thrown with clearing");
-        }
-    }
+        gameDAO.createGame(auth, "test");
 
-    @Test
-    void clearValidNonempty() {
-        var auth = new TreeMap<String, AuthData>();
-        auth.put("eeeeeee", new AuthData("eeeeeee", "testUser"));
-        db.setAuthTokens(auth);
+        userDAO.createUser(new UserData("user", "e", "hi@email.com"));
 
-        var games = new ArrayList<>(List.of(
-                new GameData(5, null, null, "coolGame", new ChessGame())
-        ));
-        db.setGames(games);
+        clearService.clear();
 
-        var users = new TreeMap<String, UserData>();
-        users.put("user", new UserData("user", "e", "hi@email.com"));
-        db.setUsers(users);
-
-        runAssertions();
-    }
-
-    @Test
-    void clearInvalid() {
-        clearService = new ClearService(null);
-        Assertions.assertThrows(DataAccessException.class, () -> clearService.clear());
+        Assertions.assertThrows(UnauthorizedException.class, () -> authDAO.authenticate(auth.authToken()));
+        Assertions.assertThrows(DataAccessException.class, () -> gameDAO.getGame(auth, 0));
+        Assertions.assertNull(userDAO.getUser("user"));
     }
 }

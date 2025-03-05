@@ -3,7 +3,9 @@ package service;
 import com.google.gson.Gson;
 import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.requests.CreateGameRequest;
 import org.junit.jupiter.api.Assertions;
@@ -17,19 +19,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CreateGameServiceTest {
 
-    MockDatabase db;
+
     CreateGameService service;
     AuthData auth;
 
+    GameDAO gameDAO;
+    AuthDAO authDAO;
+
     @BeforeEach
-    void setUp() {
-        db = new MockDatabase();
-        service = new CreateGameService(db);
+    void setUp() throws DataAccessException {
+        service = new CreateGameService();
 
         auth = new AuthData("abc123", "nightblood");
-        var authTokens = new TreeMap<String, AuthData>();
-        authTokens.put(auth.authToken(), auth);
-        db.setAuthTokens(authTokens);
+        authDAO.createAuth(auth);
     }
 
     @Test
@@ -40,7 +42,7 @@ class CreateGameServiceTest {
             service.createGame(new CreateGameRequest(auth.authToken(), "sel"));
             service.createGame(new CreateGameRequest(auth.authToken(), "nalthis"));
 
-            Assertions.assertEquals(4, db.getGames().size());
+            Assertions.assertNotNull(gameDAO.getGame(auth, 4));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e);
         }

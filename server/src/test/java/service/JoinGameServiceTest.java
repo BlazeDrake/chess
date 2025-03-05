@@ -2,10 +2,10 @@ package service;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
-import dataaccess.TakenException;
-import dataaccess.localimplementation.MockDatabase;
+import dataaccess.*;
+
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.requests.CreateGameRequest;
@@ -23,26 +23,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JoinGameServiceTest {
 
-    MockDatabase db;
+
     JoinGameService service;
 
     ArrayList<GameData> gamesList;
     AuthData auth;
+    AuthDAO authDAO;
+    GameDAO gameDAO;
 
     @BeforeEach
-    void setUp() {
-        db = new MockDatabase();
-        service = new JoinGameService(db);
+    void setUp() throws DataAccessException {
+        service = new JoinGameService();
+        authDAO = new SQLAuthDAO();
+        gameDAO = new SQLGameDAO();
 
         gamesList = new ArrayList<>(List.of(
                 new GameData(1, null, "syl", "bridge4", new ChessGame())
         ));
-        db.setGames(gamesList);
 
         auth = new AuthData("storms123", "kaladin");
-        var authTokens = new TreeMap<String, AuthData>();
-        authTokens.put(auth.authToken(), auth);
-        db.setAuthTokens(authTokens);
+        authDAO.createAuth(auth);
+
     }
 
     @Test
@@ -50,7 +51,7 @@ class JoinGameServiceTest {
         try {
             var request = new JoinGameRequest(auth.authToken(), "WhItE", 1);
             service.joinGame(request);
-            var joinedGame = db.getGames().get(0);
+            var joinedGame = gameDAO.getGame(auth, 0);
             assertEquals(auth.username(), joinedGame.whiteUsername());
         } catch (Exception e) {
             Assertions.fail("Unexpected error: " + e.getMessage());

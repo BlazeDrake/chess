@@ -3,7 +3,7 @@ package handler;
 import service.ListGamesService;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.ListGamesRequest;
 import spark.Request;
 import spark.Response;
@@ -11,7 +11,7 @@ import spark.Response;
 public class ListGamesHandler {
     ListGamesService service;
 
-    public ListGamesHandler(MockDatabase db) {
+    public ListGamesHandler() {
         this.service = new ListGamesService(db);
     }
 

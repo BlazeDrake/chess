@@ -7,7 +7,7 @@ import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.UserDAO;
 import dataaccess.localimplementation.MemoryAuthDAO;
 import dataaccess.localimplementation.MemoryUserDAO;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.requests.RegisterRequest;
 import network.results.RegisterResult;
 
@@ -15,7 +15,7 @@ public class RegisterService {
     UserDAO userDAO;
     AuthDAO authDAO;
 
-    public RegisterService(MockDatabase db) {
+    public RegisterService() {
         userDAO = new MemoryUserDAO(db);
         authDAO = new MemoryAuthDAO(db);
     }

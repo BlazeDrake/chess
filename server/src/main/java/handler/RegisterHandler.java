@@ -3,7 +3,7 @@ package handler;
 import service.RegisterService;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.localimplementation.MockDatabase;
+
 import network.datamodels.UserData;
 import network.requests.RegisterRequest;
 import spark.Request;
@@ -12,7 +12,7 @@ import spark.Response;
 public class RegisterHandler {
     RegisterService service;
 
-    public RegisterHandler(MockDatabase db) {
+    public RegisterHandler() {
         service = new RegisterService(db);
     }
 
