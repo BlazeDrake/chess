@@ -4,8 +4,6 @@ import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.UserDAO;
-import dataaccess.localimplementation.MemoryAuthDAO;
-import dataaccess.localimplementation.MemoryUserDAO;
 
 import network.requests.LoginRequest;
 import network.results.LoginResult;
@@ -14,9 +12,9 @@ public class LoginService {
     UserDAO loginDAO;
     AuthDAO authDAO;
 
-    public LoginService() {
-        loginDAO = new MemoryUserDAO(db);
-        authDAO = new MemoryAuthDAO(db);
+    public LoginService(UserDAO loginDAO, AuthDAO authDAO) {
+        this.loginDAO = loginDAO;
+        this.authDAO = authDAO;
     }
 
     public LoginResult login(LoginRequest request) throws DataAccessException {

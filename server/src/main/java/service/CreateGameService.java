@@ -4,8 +4,6 @@ import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
-import dataaccess.localimplementation.MemoryAuthDAO;
-import dataaccess.localimplementation.MemoryGameDAO;
 
 import network.requests.CreateGameRequest;
 import network.results.CreateGameResult;
@@ -14,9 +12,9 @@ public class CreateGameService {
     AuthDAO authDAO;
     GameDAO gameDAO;
 
-    public CreateGameService() {
-        authDAO = new MemoryAuthDAO(db);
-        gameDAO = new MemoryGameDAO(db);
+    public CreateGameService(AuthDAO authDAO, GameDAO gameDAO) {
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
     }
 
     public CreateGameResult createGame(CreateGameRequest request) throws DataAccessException {

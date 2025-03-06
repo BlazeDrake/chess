@@ -4,16 +4,15 @@ import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
-    public SQLGameDAO() {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+    Connection connection;
+
+    public SQLGameDAO(Connection connection) {
+        this.connection = connection;
     }
 
     @Override

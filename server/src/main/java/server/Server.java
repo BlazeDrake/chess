@@ -1,10 +1,15 @@
 package server;
 
 import dataaccess.*;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
+import dataaccess.interfaces.UserDAO;
 import handler.*;
 import com.google.gson.Gson;
 import network.ErrorResponse;
 import spark.*;
+
+import java.sql.Connection;
 
 
 public class Server {
@@ -22,18 +27,36 @@ public class Server {
     private JoinGameHandler joinGameHandler;
     private CreateGameHandler createGameHandler;
 
+    private AuthDAO authDAO;
+    private UserDAO userDAO;
+    private GameDAO gameDAO;
+    Connection connection;
+
     private Gson gson;
 
     public Server() {
 
-        clearHandler = new ClearHandler();
-        registerHandler = new RegisterHandler();
-        loginHandler = new LoginHandler();
-        logoutHandler = new LogoutHandler();
+        try {
+            DatabaseManager.createDatabase();
+            connection = DatabaseManager.getConnection();
 
-        listGamesHandler = new ListGamesHandler();
-        joinGameHandler = new JoinGameHandler();
-        createGameHandler = new CreateGameHandler();
+            authDAO = new SQLAuthDAO(connection);
+            userDAO = new SQLUserDAO(connection);
+            gameDAO = new SQLGameDAO(connection);
+
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        clearHandler = new ClearHandler(authDAO, userDAO, gameDAO);
+        registerHandler = new RegisterHandler(userDAO, authDAO);
+        loginHandler = new LoginHandler(userDAO, authDAO);
+        logoutHandler = new LogoutHandler(authDAO);
+
+        listGamesHandler = new ListGamesHandler(authDAO, gameDAO);
+        joinGameHandler = new JoinGameHandler(authDAO, gameDAO);
+        createGameHandler = new CreateGameHandler(authDAO, gameDAO);
 
         gson = new Gson();
     }

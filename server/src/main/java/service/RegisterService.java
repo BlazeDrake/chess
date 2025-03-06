@@ -5,8 +5,6 @@ import dataaccess.DataAccessException;
 import dataaccess.TakenException;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.UserDAO;
-import dataaccess.localimplementation.MemoryAuthDAO;
-import dataaccess.localimplementation.MemoryUserDAO;
 
 import network.requests.RegisterRequest;
 import network.results.RegisterResult;
@@ -15,9 +13,9 @@ public class RegisterService {
     UserDAO userDAO;
     AuthDAO authDAO;
 
-    public RegisterService() {
-        userDAO = new MemoryUserDAO(db);
-        authDAO = new MemoryAuthDAO(db);
+    public RegisterService(UserDAO userDAO, AuthDAO authDAO) {
+        this.userDAO = userDAO;
+        this.authDAO = authDAO;
     }
 
     public RegisterResult register(RegisterRequest request) throws DataAccessException {

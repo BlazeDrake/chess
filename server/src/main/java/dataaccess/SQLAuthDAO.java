@@ -3,14 +3,14 @@ package dataaccess;
 import dataaccess.interfaces.AuthDAO;
 import network.datamodels.AuthData;
 
+import java.sql.Connection;
+
 public class SQLAuthDAO implements AuthDAO {
 
-    public SQLAuthDAO() {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+    Connection connection;
+
+    public SQLAuthDAO(Connection connection) {
+        this.connection = connection;
     }
 
     @Override

@@ -5,8 +5,6 @@ import dataaccess.DataAccessException;
 import dataaccess.TakenException;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
-import dataaccess.localimplementation.MemoryAuthDAO;
-import dataaccess.localimplementation.MemoryGameDAO;
 
 import network.datamodels.GameData;
 import network.requests.JoinGameRequest;
@@ -23,9 +21,9 @@ public class JoinGameService {
     private AuthDAO authDAO;
     private GameDAO gameDAO;
 
-    public JoinGameService() {
-        authDAO = new MemoryAuthDAO(db);
-        gameDAO = new MemoryGameDAO(db);
+    public JoinGameService(AuthDAO authDAO, GameDAO gameDAO) {
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
     }
 
     public void joinGame(JoinGameRequest request) throws DataAccessException {

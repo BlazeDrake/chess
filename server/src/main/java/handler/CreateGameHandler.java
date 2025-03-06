@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
 
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
 import network.requests.CreateGameRequest;
 import service.CreateGameService;
 import spark.Request;
@@ -12,8 +14,8 @@ import spark.Response;
 public class CreateGameHandler {
     private CreateGameService service;
 
-    public CreateGameHandler() {
-        service = new CreateGameService(db);
+    public CreateGameHandler(AuthDAO authDAO, GameDAO gameDAO) {
+        service = new CreateGameService(authDAO, gameDAO);
     }
 
     public String createGame(Request req, Response res, Gson gson) throws DataAccessException {

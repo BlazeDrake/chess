@@ -3,14 +3,14 @@ package dataaccess;
 import dataaccess.interfaces.UserDAO;
 import network.datamodels.UserData;
 
+import java.sql.Connection;
+
 public class SQLUserDAO implements UserDAO {
 
-    public SQLUserDAO() {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+    Connection connection;
+
+    public SQLUserDAO(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
