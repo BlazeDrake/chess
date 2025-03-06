@@ -10,11 +10,15 @@ import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.requests.CreateGameRequest;
 import network.requests.JoinGameRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -31,11 +35,26 @@ class JoinGameServiceTest {
     AuthDAO authDAO;
     GameDAO gameDAO;
 
+    Connection connection;
+
     @BeforeEach
-    void setUp() throws DataAccessException {
-        service = new JoinGameService();
-        authDAO = new SQLAuthDAO();
-        gameDAO = new SQLGameDAO();
+    void setUp() throws DataAccessException, SQLException {
+        DatabaseManager.createDatabase();
+        connection = DatabaseManager.getConnection();
+
+        connection.setAutoCommit(false);
+        String sql = "truncate table ?";
+        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, DatabaseManager.TABLES[i]);
+                stmt.executeUpdate();
+            }
+        }
+
+        authDAO = new SQLAuthDAO(connection);
+        gameDAO = new SQLGameDAO(connection);
+
+        service = new JoinGameService(authDAO, gameDAO);
 
         gamesList = new ArrayList<>(List.of(
                 new GameData(1, null, "syl", "bridge4", new ChessGame())
@@ -44,6 +63,11 @@ class JoinGameServiceTest {
         auth = new AuthData("storms123", "kaladin");
         authDAO.createAuth(auth);
 
+    }
+
+    @AfterEach
+    void cleanup() throws SQLException {
+        connection.rollback();
     }
 
     @Test

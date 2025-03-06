@@ -1,19 +1,20 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.DataAccessException;
-import dataaccess.SQLAuthDAO;
-import dataaccess.SQLGameDAO;
-import dataaccess.UnauthorizedException;
+import dataaccess.*;
 
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.requests.ListGamesRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,12 +31,27 @@ class ListGamesServiceTest {
 
     GameDAO gameDAO;
     AuthDAO authDAO;
+    Connection connection;
 
     @BeforeEach
-    void setup() throws DataAccessException {
-        service = new ListGamesService();
-        gameDAO = new SQLGameDAO();
-        authDAO = new SQLAuthDAO();
+    void setup() throws DataAccessException, SQLException {
+
+        DatabaseManager.createDatabase();
+        connection = DatabaseManager.getConnection();
+
+        connection.setAutoCommit(false);
+        String sql = "truncate table ?";
+        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, DatabaseManager.TABLES[i]);
+                stmt.executeUpdate();
+            }
+        }
+
+        gameDAO = new SQLGameDAO(connection);
+        authDAO = new SQLAuthDAO(connection);
+
+        service = new ListGamesService(authDAO, gameDAO);
 
         auth = new AuthData("abc123", "nightblood");
         authDAO.createAuth(auth);
@@ -51,6 +67,11 @@ class ListGamesServiceTest {
         }
 
 
+    }
+
+    @AfterEach
+    void cleanup() throws SQLException {
+        connection.rollback();
     }
 
     @Test

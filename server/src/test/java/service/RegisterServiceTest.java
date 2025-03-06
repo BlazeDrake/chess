@@ -1,13 +1,16 @@
 package service;
 
-import dataaccess.DataAccessException;
-import dataaccess.SQLUserDAO;
-import dataaccess.TakenException;
+import dataaccess.*;
+import dataaccess.interfaces.UserDAO;
 import network.datamodels.UserData;
 import network.requests.RegisterRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +19,32 @@ import static org.junit.jupiter.api.Assertions.*;
 class RegisterServiceTest {
     RegisterService service;
 
+    UserDAO userDAO;
+    Connection connection;
+
     @BeforeEach
-    void setUp() {
-        service = new RegisterService();
+    void setUp() throws DataAccessException, SQLException {
+
+        DatabaseManager.createDatabase();
+        connection = DatabaseManager.getConnection();
+
+        connection.setAutoCommit(false);
+        String sql = "truncate table ?";
+        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, DatabaseManager.TABLES[i]);
+                stmt.executeUpdate();
+            }
+        }
+
+        userDAO = new SQLUserDAO(connection);
+
+        service = new RegisterService(userDAO, new SQLAuthDAO(connection));
+    }
+
+    @AfterEach
+    void cleanup() throws SQLException {
+        connection.rollback();
     }
 
     @Test
@@ -33,10 +59,9 @@ class RegisterServiceTest {
                 service.register(new RegisterRequest(user));
 
             }
-            var testDao = new SQLUserDAO();
             //Check to ensure lists line up
             for (var user : usersToAdd) {
-                assertNotNull(testDao.getUser(user.username()));
+                assertNotNull(userDAO.getUser(user.username()));
             }
         } catch (DataAccessException e) {
             fail("Unexpect ed error: " + e.getMessage());

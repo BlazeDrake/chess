@@ -9,10 +9,14 @@ import dataaccess.interfaces.UserDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -25,14 +29,32 @@ class ClearServiceTest {
     AuthDAO authDAO;
     UserDAO userDAO;
     GameDAO gameDAO;
+    Connection connection;
 
     @BeforeEach
-    void setup() {
-        authDAO = new SQLAuthDAO();
-        userDAO = new SQLUserDAO();
-        gameDAO = new SQLGameDAO();
+    void setup() throws DataAccessException, SQLException {
+        DatabaseManager.createDatabase();
+        connection = DatabaseManager.getConnection();
 
-        clearService = new ClearService();
+        connection.setAutoCommit(false);
+        String sql = "truncate table ?";
+        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, DatabaseManager.TABLES[i]);
+                stmt.executeUpdate();
+            }
+        }
+
+        authDAO = new SQLAuthDAO(connection);
+        userDAO = new SQLUserDAO(connection);
+        gameDAO = new SQLGameDAO(connection);
+
+        clearService = new ClearService(authDAO, gameDAO, userDAO);
+    }
+
+    @AfterEach
+    void cleanup() throws SQLException {
+        connection.rollback();
     }
 
 

@@ -9,6 +9,8 @@ public class DatabaseManager {
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
 
+    public static final String[] TABLES = {"userData", "authData", "gameData"};
+
     /*
      * Load the database information for the db.properties file.
      */

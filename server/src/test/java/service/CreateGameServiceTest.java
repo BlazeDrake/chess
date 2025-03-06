@@ -1,18 +1,21 @@
 package service;
 
 import com.google.gson.Gson;
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
+import dataaccess.*;
 
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.requests.CreateGameRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.crypto.Data;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,13 +28,34 @@ class CreateGameServiceTest {
 
     GameDAO gameDAO;
     AuthDAO authDAO;
+    Connection connection;
 
     @BeforeEach
-    void setUp() throws DataAccessException {
-        service = new CreateGameService();
+    void setUp() throws DataAccessException, SQLException {
+        DatabaseManager.createDatabase();
+        connection = DatabaseManager.getConnection();
+
+        connection.setAutoCommit(false);
+        String sql = "truncate table ?";
+        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, DatabaseManager.TABLES[i]);
+                stmt.executeUpdate();
+            }
+        }
+
+        authDAO = new SQLAuthDAO(connection);
+        gameDAO = new SQLGameDAO(connection);
+
+        service = new CreateGameService(authDAO, gameDAO);
 
         auth = new AuthData("abc123", "nightblood");
         authDAO.createAuth(auth);
+    }
+
+    @AfterEach
+    void cleanup() throws SQLException {
+        connection.rollback();
     }
 
     @Test
