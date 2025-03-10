@@ -28,24 +28,12 @@ class RegisterServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
-        connection.setAutoCommit(false);
-        String sql = "truncate table ?";
-        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, DatabaseManager.TABLES[i]);
-                stmt.executeUpdate();
-            }
-        }
 
         userDAO = new SQLUserDAO(connection);
 
         service = new RegisterService(userDAO, new SQLAuthDAO(connection));
     }
 
-    @AfterEach
-    void cleanup() throws SQLException {
-        connection.rollback();
-    }
 
     @Test
     public void testAddUser() {

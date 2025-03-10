@@ -9,7 +9,7 @@ public class DatabaseManager {
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
 
-    public static final String[] TABLES = {"userData", "authData", "gameData"};
+    public static final String[] TABLES = {"auth", "games", "users"};
 
     /*
      * Load the database information for the db.properties file.
@@ -67,7 +67,7 @@ public class DatabaseManager {
 
             statement = """
                     CREATE TABLE IF NOT EXISTS auth (
-                       authToken INT NOT NULl,
+                       authToken VARCHAR(255) NOT NULl,
                        username VARCHAR(255) NOT NULL,
                        PRIMARY KEY (authToken)
                     );""";
@@ -110,5 +110,11 @@ public class DatabaseManager {
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
+    }
+
+    public enum TableName {
+        Auth,
+        Games,
+        Users
     }
 }

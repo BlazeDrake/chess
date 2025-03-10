@@ -30,14 +30,6 @@ class LoginServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
-        connection.setAutoCommit(false);
-        String sql = "truncate table ?";
-        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, DatabaseManager.TABLES[i]);
-                stmt.executeUpdate();
-            }
-        }
 
         userDAO = new SQLUserDAO(connection);
         service = new LoginService(userDAO, new SQLAuthDAO(connection));
@@ -45,10 +37,6 @@ class LoginServiceTest {
         userDAO.createUser(new UserData("nightblood", "evil", "ex@roshar.com"));
     }
 
-    @AfterEach
-    void cleanup() throws SQLException {
-        connection.rollback();
-    }
 
     @Test
     void loginValid() throws DataAccessException {

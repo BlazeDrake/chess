@@ -42,14 +42,6 @@ class JoinGameServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
-        connection.setAutoCommit(false);
-        String sql = "truncate table ?";
-        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, DatabaseManager.TABLES[i]);
-                stmt.executeUpdate();
-            }
-        }
 
         authDAO = new SQLAuthDAO(connection);
         gameDAO = new SQLGameDAO(connection);
@@ -65,10 +57,6 @@ class JoinGameServiceTest {
 
     }
 
-    @AfterEach
-    void cleanup() throws SQLException {
-        connection.rollback();
-    }
 
     @Test
     void testJoinGameValid() {

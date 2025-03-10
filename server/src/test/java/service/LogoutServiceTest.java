@@ -29,14 +29,6 @@ class LogoutServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
-        connection.setAutoCommit(false);
-        String sql = "truncate table ?";
-        for (int i = 0; i < DatabaseManager.TABLES.length; i++) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, DatabaseManager.TABLES[i]);
-                stmt.executeUpdate();
-            }
-        }
 
         authDAO = new SQLAuthDAO(connection);
         service = new LogoutService(authDAO);
@@ -47,10 +39,6 @@ class LogoutServiceTest {
 
     }
 
-    @AfterEach
-    void cleanup() throws SQLException {
-        connection.rollback();
-    }
 
     @Test
     public void logoutValid() throws DataAccessException {
