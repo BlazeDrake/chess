@@ -15,7 +15,7 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public void createAuth(AuthData data) throws DataAccessException {
-
+        
     }
 
     @Override
