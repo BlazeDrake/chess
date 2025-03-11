@@ -23,43 +23,42 @@ public class ChessGame {
     private ChessPosition enPassantPos;
 
 
-    private ArrayList<CheckCalculator> checkCalculators;
+    private static final CheckCalculator[] checkCalculators = {
+            new CheckCalculator(new BishopMovesCalculator(), List.of(
+                    ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.BISHOP
+            )),
+            new CheckCalculator(new RookMovesCalculator(), List.of(
+                    ChessPiece.PieceType.QUEEN,
+                    ChessPiece.PieceType.ROOK
+            )),
+            new CheckCalculator(new KnightMovesCalculator(), List.of(
+                    ChessPiece.PieceType.KNIGHT
+            )),
+            new CheckCalculator(new KingMovesCalculator(), List.of(
+                    ChessPiece.PieceType.ROOK,
+                    ChessPiece.PieceType.KING,
+                    ChessPiece.PieceType.BISHOP,
+                    ChessPiece.PieceType.QUEEN
+            )),
+            new CheckCalculator(new PawnMovesCalculator(), List.of(
+                    ChessPiece.PieceType.PAWN,
+                    ChessPiece.PieceType.KING,
+                    ChessPiece.PieceType.BISHOP,
+                    ChessPiece.PieceType.QUEEN
+            ))
+    };
 
     public ChessGame() {
-        board=new ChessBoard();
+        board = new ChessBoard();
         board.resetBoard();
 
-        curPlayer=TeamColor.WHITE;
-
-        checkCalculators = new ArrayList<>();
-        checkCalculators.add(new CheckCalculator(new BishopMovesCalculator(), List.of(
-                ChessPiece.PieceType.QUEEN,ChessPiece.PieceType.BISHOP
-        )));
-        checkCalculators.add(new CheckCalculator(new RookMovesCalculator(), List.of(
-                ChessPiece.PieceType.QUEEN,
-                ChessPiece.PieceType.ROOK
-        )));
-        checkCalculators.add(new CheckCalculator(new KnightMovesCalculator(), List.of(
-                ChessPiece.PieceType.KNIGHT
-        )));
-        checkCalculators.add(new CheckCalculator(new KingMovesCalculator(),List.of(
-                ChessPiece.PieceType.ROOK,
-                ChessPiece.PieceType.KING,
-                ChessPiece.PieceType.BISHOP,
-                ChessPiece.PieceType.QUEEN
-        )));
-        checkCalculators.add(new CheckCalculator(new PawnMovesCalculator(),List.of(
-                ChessPiece.PieceType.PAWN,
-                ChessPiece.PieceType.KING,
-                ChessPiece.PieceType.BISHOP,
-                ChessPiece.PieceType.QUEEN
-        )));
+        curPlayer = TeamColor.WHITE;
 
         //Get the kings
-        whiteKing=board.getPiece(new ChessPosition(1,5));
-        blackKing=board.getPiece(new ChessPosition(8,5));
+        whiteKing = board.getPiece(new ChessPosition(1, 5));
+        blackKing = board.getPiece(new ChessPosition(8, 5));
 
-        enPassantPos=null;
+        enPassantPos = null;
     }
 
     /**
@@ -75,7 +74,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        curPlayer=team;
+        curPlayer = team;
     }
 
     @Override
@@ -103,70 +102,71 @@ public class ChessGame {
         BLACK
     }
 
-    private boolean isValidMove(ChessMove move){
-        var pos=move.getStartPosition();
-        var piece=board.getPiece(pos);
-        boolean returnVal=true;
-        if(piece==null){
+    private boolean isValidMove(ChessMove move) {
+        var pos = move.getStartPosition();
+        var piece = board.getPiece(pos);
+        boolean returnVal = true;
+        if (piece == null) {
             return false;
         }
         //temporarily move the piece, then test for check
-        var baseOldPiece=board.getPiece(move.getEndPosition());
+        var baseOldPiece = board.getPiece(move.getEndPosition());
         var tempTestPiece = board.movePiece(move);
-        if(tempTestPiece.getPieceType()== ChessPiece.PieceType.KING){
-            if(tempTestPiece.getTeamColor()==TeamColor.WHITE){
-                whiteKing=tempTestPiece;
+        if (tempTestPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (tempTestPiece.getTeamColor() == TeamColor.WHITE) {
+                whiteKing = tempTestPiece;
             }
-            else{
-                blackKing=tempTestPiece;
+            else {
+                blackKing = tempTestPiece;
             }
         }
 
-        if(isInCheck(piece.getTeamColor())){
-            returnVal=false;
+        if (isInCheck(piece.getTeamColor())) {
+            returnVal = false;
         }
         //System.out.println(board.toString());
 
-        var returnedTestPiece=board.movePiece(new ChessMove(move.getEndPosition(),pos,null));
-        if(returnedTestPiece.getPieceType()== ChessPiece.PieceType.KING){
-            if(returnedTestPiece.getTeamColor()==TeamColor.WHITE){
-                whiteKing=returnedTestPiece;
+        var returnedTestPiece = board.movePiece(new ChessMove(move.getEndPosition(), pos, null));
+        if (returnedTestPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (returnedTestPiece.getTeamColor() == TeamColor.WHITE) {
+                whiteKing = returnedTestPiece;
             }
-            else{
-                blackKing=returnedTestPiece;
+            else {
+                blackKing = returnedTestPiece;
             }
         }
-        if(baseOldPiece!=null){
-            var oldPiece=new ChessPiece(baseOldPiece.getTeamColor(),baseOldPiece.getPieceType());
+        if (baseOldPiece != null) {
+            var oldPiece = new ChessPiece(baseOldPiece.getTeamColor(), baseOldPiece.getPieceType());
             board.addPiece(move.getEndPosition(), oldPiece);
         }
-      //  System.out.println(returnVal);
-      //  System.out.println(board.toString());
+        //  System.out.println(returnVal);
+        //  System.out.println(board.toString());
         return returnVal;
     }
 
     /**
      * Tests if a rook can castle with the king
+     *
      * @param rookPos the position of the rook
      */
-    private boolean rookIsValid(ChessPosition rookPos){
-        var rook=board.getPiece(rookPos);
+    private boolean rookIsValid(ChessPosition rookPos) {
+        var rook = board.getPiece(rookPos);
         //exit early if the rook has moved(if it's not a rook, it would have had to move to be there) or if there's no piece in the rook pos
-        if(rook==null||rook.getHasMoved()){
+        if (rook == null || rook.getHasMoved()) {
             return false;
         }
         //check for blocks
 
-        int rookCol=rookPos.getColumn();
+        int rookCol = rookPos.getColumn();
         //Set the direction to test ( will move right if in column 1; otherwise it must be in column 8 and so will  move left)
-        int dir=rookCol==1?1:-1;
+        int dir = rookCol == 1 ? 1 : -1;
         //Start 1 space in the direction of dir, then continue until hitting a piece or the board end
-        for(int i=1;i<=7;i++){
-            var testPos=new ChessPosition(rookPos.getRow(),rookCol+(i*dir));
-            var testPiece=board.getPiece(testPos);
+        for (int i = 1; i <= 7; i++) {
+            var testPos = new ChessPosition(rookPos.getRow(), rookCol + (i * dir));
+            var testPiece = board.getPiece(testPos);
             //if the first piece is a king of the same color, return true. Otherwise, return false
-            if(testPiece!=null){
-                return testPiece.getPieceType()== ChessPiece.PieceType.KING && testPiece.getTeamColor()==rook.getTeamColor();
+            if (testPiece != null) {
+                return testPiece.getPieceType() == ChessPiece.PieceType.KING && testPiece.getTeamColor() == rook.getTeamColor();
             }
         }
 
@@ -182,38 +182,38 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
 
-        var testPiece=board.getPiece(startPosition);
-        if(testPiece==null){
+        var testPiece = board.getPiece(startPosition);
+        if (testPiece == null) {
             return null;
         }
 
-        ArrayList<ChessMove> testMoves=new ArrayList<>(testPiece.pieceMoves(board,startPosition));
+        ArrayList<ChessMove> testMoves = new ArrayList<>(testPiece.pieceMoves(board, startPosition));
         /*
          foreach move in the chosen pieces available moves, run isvalidMove
          If it is, remove it from the list of available moves
          Return whatever remains
          */
-        for(int i=0;i< testMoves  .size();i++){
-            if(!isValidMove(testMoves.get(i))){
+        for (int i = 0; i < testMoves.size(); i++) {
+            if (!isValidMove(testMoves.get(i))) {
                 testMoves.remove(i);
                 i--;
             }
         }
         //Add en passant (add a variable for en passantable location) and castling (for castling, add a variable for if the king moved)if valid
-        if(testPiece.getPieceType()== ChessPiece.PieceType.PAWN&&enPassantPos!=null){
-            new PawnMovesCalculator().tryAddPawnMove(board,startPosition,enPassantPos,testMoves,false);
+        if (testPiece.getPieceType() == ChessPiece.PieceType.PAWN && enPassantPos != null) {
+            new PawnMovesCalculator().tryAddPawnMove(board, startPosition, enPassantPos, testMoves, false);
         }
-        else if(testPiece.getPieceType()== ChessPiece.PieceType.KING){
+        else if (testPiece.getPieceType() == ChessPiece.PieceType.KING) {
             //If the king isn't in check, and hasn't moved, test for potential castling
-            if(!testPiece.getHasMoved()&&!isInCheck(testPiece.getTeamColor())){
-                var row=startPosition.getRow();
+            if (!testPiece.getHasMoved() && !isInCheck(testPiece.getTeamColor())) {
+                var row = startPosition.getRow();
                 //test left rook
-                if(rookIsValid(new ChessPosition(row,1))){
-                    testMoves.add(new ChessMove(startPosition,new ChessPosition(row,startPosition.getColumn()-2),null));
+                if (rookIsValid(new ChessPosition(row, 1))) {
+                    testMoves.add(new ChessMove(startPosition, new ChessPosition(row, startPosition.getColumn() - 2), null));
                 }
                 //test right rook
-                if(rookIsValid(new ChessPosition(row,8))){
-                    testMoves.add(new ChessMove(startPosition,new ChessPosition(row,startPosition.getColumn()+2),null));
+                if (rookIsValid(new ChessPosition(row, 8))) {
+                    testMoves.add(new ChessMove(startPosition, new ChessPosition(row, startPosition.getColumn() + 2), null));
                 }
             }
         }
@@ -228,70 +228,71 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
 
-        var endPos=move.getEndPosition();
-        var startPos=move.getStartPosition();
+        var endPos = move.getEndPosition();
+        var startPos = move.getStartPosition();
         //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
-        var possibleMoves=validMoves(startPos);
-        if(possibleMoves==null||!possibleMoves.contains(move)){
-            throw new InvalidMoveException("Invalid move: "+move.toString());
+        var possibleMoves = validMoves(startPos);
+        if (possibleMoves == null || !possibleMoves.contains(move)) {
+            throw new InvalidMoveException("Invalid move: " + move.toString());
         }
-        else if(curPlayer!=board.getPiece(move.getStartPosition()).getTeamColor()){
+        else if (curPlayer != board.getPiece(move.getStartPosition()).getTeamColor()) {
             throw new InvalidMoveException("It is not this piece team's turn!");
         }
-        else{
-            var movedPiece=board.movePiece(move);
+        else {
+            var movedPiece = board.movePiece(move);
             //If the piece is a king, update the king variable to the new one
-            if(movedPiece!=null){
+            if (movedPiece != null) {
                 movedPiece.setHasMoved(true);
-                if(movedPiece.getPieceType()== ChessPiece.PieceType.KING) {
+                if (movedPiece.getPieceType() == ChessPiece.PieceType.KING) {
                     handleCastleMove(endPos, startPos);
                     if (movedPiece.getTeamColor() == TeamColor.BLACK) {
                         blackKing = movedPiece;
-                    } else {
+                    }
+                    else {
                         whiteKing = movedPiece;
                     }
                 }
                 //handle en passant (if it's a pawn double moving, store it in the en passant variable. Otherwise reset en passant variable)
-                if(movedPiece.getPieceType()== ChessPiece.PieceType.PAWN){
+                if (movedPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
                     handleEnPassant(move, endPos, startPos);
                 }
-                else{
-                    enPassantPos=null;
+                else {
+                    enPassantPos = null;
                 }
             }
 
             //Update the turn
-            curPlayer = curPlayer==TeamColor.WHITE?TeamColor.BLACK:TeamColor.WHITE;
+            curPlayer = curPlayer == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
         }
     }
 
     private void handleCastleMove(ChessPosition endPos, ChessPosition startPos) {
-        int colMovement= endPos.getColumn()- startPos.getColumn();
+        int colMovement = endPos.getColumn() - startPos.getColumn();
         //right castle
-        if(colMovement==2){
-            var rookPos=new ChessPosition(endPos.getRow(),8);
+        if (colMovement == 2) {
+            var rookPos = new ChessPosition(endPos.getRow(), 8);
             board.getPiece(rookPos).setHasMoved(true);
-            board.movePiece(new ChessMove(rookPos,new ChessPosition(endPos.getRow(), endPos.getColumn()-1),null));
+            board.movePiece(new ChessMove(rookPos, new ChessPosition(endPos.getRow(), endPos.getColumn() - 1), null));
         }
         //left castle
-        else if(colMovement==-2){
-            var rookPos=new ChessPosition(endPos.getRow(),1);
+        else if (colMovement == -2) {
+            var rookPos = new ChessPosition(endPos.getRow(), 1);
             board.getPiece(rookPos).setHasMoved(true);
-            board.movePiece(new ChessMove(rookPos,new ChessPosition(endPos.getRow(), endPos.getColumn()+1),null));
+            board.movePiece(new ChessMove(rookPos, new ChessPosition(endPos.getRow(), endPos.getColumn() + 1), null));
         }
     }
 
     private void handleEnPassant(ChessMove move, ChessPosition endPos, ChessPosition startPos) {
-        if(Math.abs(endPos.getRow()- startPos.getRow())==2){
-            int mult = curPlayer==TeamColor.BLACK?-1:1;
-            enPassantPos=new ChessPosition(startPos.getRow()+mult, startPos.getColumn());
+        if (Math.abs(endPos.getRow() - startPos.getRow()) == 2) {
+            int mult = curPlayer == TeamColor.BLACK ? -1 : 1;
+            enPassantPos = new ChessPosition(startPos.getRow() + mult, startPos.getColumn());
         }
-        else{
-            if(move.getEndPosition().equals(enPassantPos)){
+        else {
+            if (move.getEndPosition().equals(enPassantPos)) {
                 //additional checks
                 board.removePiece(new ChessPosition(startPos.getRow(), endPos.getColumn()));
             }
-            enPassantPos=null;
+            enPassantPos = null;
         }
     }
 
@@ -303,13 +304,13 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
 
-        for(var calculator: checkCalculators){
-            ChessPosition kingPos=teamColor==TeamColor.BLACK?blackKing.getPos():whiteKing.getPos();
-            for(var pos: calculator.getCalculator().pieceMoves(board, kingPos)){
+        for (var calculator : checkCalculators) {
+            ChessPosition kingPos = teamColor == TeamColor.BLACK ? blackKing.getPos() : whiteKing.getPos();
+            for (var pos : calculator.getCalculator().pieceMoves(board, kingPos)) {
                 //If a piece could move to the king's position & isn't the same team, the king is in check
-                var testPiece=board.getPiece(pos.getEndPosition());
-                if(testPiece!=null&&testPiece.getTeamColor()!=teamColor){
-                    if(calculator.getValidPieceTypes().contains(testPiece.getPieceType())){
+                var testPiece = board.getPiece(pos.getEndPosition());
+                if (testPiece != null && testPiece.getTeamColor() != teamColor) {
+                    if (calculator.getValidPieceTypes().contains(testPiece.getPieceType())) {
                         return true;
                     }
                 }
@@ -318,14 +319,14 @@ public class ChessGame {
         return false;
     }
 
-    private boolean teamCanMove(TeamColor teamColor){
-        for(int i=1;i<=8;i++){
-            for(int j=1;j<=8;j++){
-                var testPos=new ChessPosition(i,j);
-                var testPiece=board.getPiece(testPos);
-                if(testPiece!=null&&testPiece.getTeamColor()==teamColor){
+    private boolean teamCanMove(TeamColor teamColor) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                var testPos = new ChessPosition(i, j);
+                var testPiece = board.getPiece(testPos);
+                if (testPiece != null && testPiece.getTeamColor() == teamColor) {
                     var move = validMoves(testPos);
-                    if(move!=null&&!move.isEmpty()){
+                    if (move != null && !move.isEmpty()) {
                         return true;
                     }
                 }
@@ -335,6 +336,7 @@ public class ChessGame {
 
         return false;
     }
+
     /**
      * Determines if the given team is in checkmate
      *
@@ -342,7 +344,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return isInCheck(teamColor)&&!teamCanMove(teamColor);
+        return isInCheck(teamColor) && !teamCanMove(teamColor);
         //Check if there are no valid moves for the king, and teh king is in check
     }
 
@@ -354,7 +356,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return !isInCheck(teamColor)&&!teamCanMove(teamColor);
+        return !isInCheck(teamColor) && !teamCanMove(teamColor);
         //Check if there are no valid moves for the king, and teh king isn't in check
     }
 
@@ -364,17 +366,17 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        this.board=board;
+        this.board = board;
         //find the king
-        for(int i=1;i<=8;i++){
-            for(int j=1;j<=8;j++){
-                var testPiece=board.getPiece(new ChessPosition(i,j));
-                if(testPiece!=null&&testPiece.getPieceType()==ChessPiece.PieceType.KING){
-                    if(testPiece.getTeamColor()==TeamColor.BLACK){
-                        blackKing=testPiece;
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                var testPiece = board.getPiece(new ChessPosition(i, j));
+                if (testPiece != null && testPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                    if (testPiece.getTeamColor() == TeamColor.BLACK) {
+                        blackKing = testPiece;
                     }
-                    else{
-                        whiteKing=testPiece;
+                    else {
+                        whiteKing = testPiece;
                     }
                 }
             }

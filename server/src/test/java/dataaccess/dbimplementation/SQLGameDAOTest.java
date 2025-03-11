@@ -95,7 +95,6 @@ class SQLGameDAOTest {
         String sql = "select id, whiteUsername, blackUsername, gameName, chessGame from games;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             var res = stmt.executeQuery();
-            res.next();
             while (res.next()) {
                 count++;
             }
@@ -108,10 +107,9 @@ class SQLGameDAOTest {
 
     @Test
     void listGamesValid() throws DataAccessException {
-        int expectedCount = getCount();
-
         clearTestGames();
         addGames();
+        int expectedCount = getCount();
 
         var gamesList = gameDAO.listGames();
 

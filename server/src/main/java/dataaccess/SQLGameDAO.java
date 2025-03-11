@@ -64,7 +64,6 @@ public class SQLGameDAO implements GameDAO {
                     id = generatedKeys.getInt(1);
                 }
             }
-            stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }

@@ -71,6 +71,11 @@ class SQLAuthDAOTest {
         String sql = "select authToken, username from auth;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             var res = stmt.executeQuery();
+
+            if (res.first()) {
+                count = 1;
+            }
+
             while (res.next()) {
                 count++;
             }
