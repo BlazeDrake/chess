@@ -7,7 +7,7 @@ import network.datamodels.GameData;
 import java.util.Collection;
 
 public interface GameDAO {
-    Collection<GameData> listGames(String authToken) throws DataAccessException;
+    Collection<GameData> listGames() throws DataAccessException;
 
     int createGame(AuthData auth, String gameName) throws DataAccessException;
 

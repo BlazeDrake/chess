@@ -21,6 +21,6 @@ public class ListGamesService {
 
     public ListGamesResult listGames(ListGamesRequest request) throws DataAccessException {
         var auth = authDAO.authenticate(request.authToken());
-        return new ListGamesResult(gameDAO.listGames(auth.authToken()));
+        return new ListGamesResult(gameDAO.listGames());
     }
 }
