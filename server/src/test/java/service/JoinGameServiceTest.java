@@ -16,9 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -30,7 +28,7 @@ class JoinGameServiceTest {
 
     JoinGameService service;
 
-    ArrayList<GameData> gamesList;
+    int testID;
     AuthData auth;
     AuthDAO authDAO;
     GameDAO gameDAO;
@@ -49,9 +47,24 @@ class JoinGameServiceTest {
 
         service = new JoinGameService(authDAO, gameDAO);
 
-        gamesList = new ArrayList<>(List.of(
-                new GameData(1, null, "syl", "bridge4", new ChessGame())
-        ));
+        Gson gson = new Gson();
+
+        String sql = "INSERT INTO games (whiteUsername, blackUsername, gameName, chessGame) VALUES (?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql,
+                Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, null);
+            stmt.setString(2, "syl");
+            stmt.setString(3, "bridge4");
+            stmt.setString(4, gson.toJson(new ChessGame()));
+            if (stmt.executeUpdate() == 1) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    generatedKeys.next();
+                    testID = generatedKeys.getInt(1);
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
 
         auth = new AuthData("storms123", "kaladin");
         authDAO.createAuth(auth);
@@ -64,7 +77,7 @@ class JoinGameServiceTest {
         try {
             var request = new JoinGameRequest(auth.authToken(), "WhItE", 1);
             service.joinGame(request);
-            var joinedGame = gameDAO.getGame(auth, 0);
+            var joinedGame = gameDAO.getGame(auth, testID);
             assertEquals(auth.username(), joinedGame.whiteUsername());
         } catch (Exception e) {
             Assertions.fail("Unexpected error: " + e.getMessage());
@@ -73,7 +86,7 @@ class JoinGameServiceTest {
 
     @Test
     void testJoinGameTaken() {
-        var request = new JoinGameRequest(auth.authToken(), "BLACK", 1);
+        var request = new JoinGameRequest(auth.authToken(), "BLACK", testID);
         Assertions.assertThrows(TakenException.class, () -> service.joinGame(request));
     }
 

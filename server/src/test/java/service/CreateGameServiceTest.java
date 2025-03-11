@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -34,7 +33,7 @@ class CreateGameServiceTest {
     void setUp() throws DataAccessException, SQLException {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
-
+        DatabaseManager.reset();
 
         authDAO = new SQLAuthDAO(connection);
         gameDAO = new SQLGameDAO(connection);
