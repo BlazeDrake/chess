@@ -28,7 +28,7 @@ class RegisterServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
-
+        DatabaseManager.reset();
         userDAO = new SQLUserDAO(connection);
 
         service = new RegisterService(userDAO, new SQLAuthDAO(connection));

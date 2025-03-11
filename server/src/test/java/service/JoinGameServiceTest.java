@@ -42,6 +42,7 @@ class JoinGameServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
+        DatabaseManager.reset();
 
         authDAO = new SQLAuthDAO(connection);
         gameDAO = new SQLGameDAO(connection);

@@ -38,7 +38,7 @@ class ListGamesServiceTest {
 
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
-
+        DatabaseManager.reset();
 
         gameDAO = new SQLGameDAO(connection);
         authDAO = new SQLAuthDAO(connection);
@@ -49,9 +49,9 @@ class ListGamesServiceTest {
         authDAO.createAuth(auth);
 
         gamesList = new ArrayList<>(List.of(
-                new GameData(0, "a", "b", "air", new ChessGame()),
-                new GameData(1, "c", "d", "sick", new ChessGame()),
-                new GameData(2, "e", "f", "low", new ChessGame())
+                new GameData(1, "a", "b", "air", new ChessGame()),
+                new GameData(2, "c", "d", "sick", new ChessGame()),
+                new GameData(3, "e", "f", "low", new ChessGame())
         ));
         for (GameData gameData : gamesList) {
             gameDAO.createGame(auth, gameData.gameName());

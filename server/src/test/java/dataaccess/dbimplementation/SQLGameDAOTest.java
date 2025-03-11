@@ -117,7 +117,11 @@ class SQLGameDAOTest {
     }
 
     @Test
-    void listGamesInvalid() {
+    void listGamesInvalid() throws DataAccessException {
+        clearTestGames();
+        var gamesList = gameDAO.listGames();
+
+        Assertions.assertEquals(0, gamesList.size());
     }
 
     @Test

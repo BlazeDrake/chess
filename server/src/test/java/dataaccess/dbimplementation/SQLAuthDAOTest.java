@@ -72,10 +72,6 @@ class SQLAuthDAOTest {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             var res = stmt.executeQuery();
 
-            if (res.first()) {
-                count = 1;
-            }
-
             while (res.next()) {
                 count++;
             }

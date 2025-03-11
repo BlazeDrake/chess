@@ -34,6 +34,8 @@ class LoginServiceTest {
         userDAO = new SQLUserDAO(connection);
         service = new LoginService(userDAO, new SQLAuthDAO(connection));
 
+        DatabaseManager.reset();
+
         userDAO.createUser(new UserData("nightblood", "evil", "ex@roshar.com"));
     }
 

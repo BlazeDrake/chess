@@ -33,6 +33,8 @@ class LogoutServiceTest {
         authDAO = new SQLAuthDAO(connection);
         service = new LogoutService(authDAO);
 
+        DatabaseManager.reset();
+
         authDAO.createAuth(new AuthData("abc123", "syl"));
         authDAO.createAuth(new AuthData("mmmmmm", "pattern"));
 

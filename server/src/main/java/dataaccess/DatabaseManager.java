@@ -112,6 +112,18 @@ public class DatabaseManager {
         }
     }
 
+    public static void reset() throws DataAccessException {
+        var connection = getConnection();
+        for (var table : TABLES) {
+            String sql = "truncate table " + table + ";";
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new DataAccessException(e.getMessage());
+            }
+        }
+    }
+
     public enum TableName {
         Auth,
         Games,

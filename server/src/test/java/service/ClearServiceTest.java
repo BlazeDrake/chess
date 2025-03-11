@@ -36,6 +36,7 @@ class ClearServiceTest {
         DatabaseManager.createDatabase();
         connection = DatabaseManager.getConnection();
 
+        DatabaseManager.reset();
 
         authDAO = new SQLAuthDAO(connection);
         userDAO = new SQLUserDAO(connection);
