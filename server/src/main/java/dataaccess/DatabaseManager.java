@@ -58,7 +58,7 @@ public class DatabaseManager {
                        whiteUsername VARCHAR(255),
                        blackUsername VARCHAR(255),
                        gameName VARCHAR(255) NOT NULL,
-                       chessGame VARCHAR(255) NOT NULL,
+                       chessGame LONGTEXT NOT NULL,
                        PRIMARY KEY (id)
                     );""";
             try (var preparedStatement = conn.prepareStatement(statement)) {

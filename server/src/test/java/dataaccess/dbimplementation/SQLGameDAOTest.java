@@ -5,16 +5,14 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.SQLGameDAO;
+import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,11 +37,18 @@ class SQLGameDAOTest {
         gameDAO = new SQLGameDAO(connection);
     }
 
+    @AfterEach
+    void cleanup() throws DataAccessException {
+        clearTestGames();
+    }
+
     private void addGames() throws DataAccessException {
         clearTestGames();
         String sql = "INSERT INTO games (whiteUsername, blackUsername, gameName, chessGame) VALUES (?, ?, ?, ?);";
-        for (var game : testGames) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        for (int i = 0; i < testGames.length; i++) {
+            var game = testGames[i];
+            try (PreparedStatement stmt = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, game.whiteUsername());
                 stmt.setString(2, game.blackUsername());
                 stmt.setString(3, game.gameName());
@@ -52,7 +57,7 @@ class SQLGameDAOTest {
                     try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                         generatedKeys.next();
                         int id = generatedKeys.getInt(1); // ID of the inserted book
-                        game = new GameData(id, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+                        testGames[i] = new GameData(id, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
                     }
                 }
                 stmt.executeUpdate();
@@ -63,15 +68,13 @@ class SQLGameDAOTest {
     }
 
     private void clearTestGames() throws DataAccessException {
-        String sql = "DELETE FROM games WHERE id = ?;";
-        for (var game : testGames) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setInt(1, game.gameID());
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                throw new DataAccessException(e.getMessage());
-            }
+        String sql = "truncate table games;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
         }
+
     }
 
     private boolean attemptFindGame(int id) throws DataAccessException {
@@ -92,6 +95,7 @@ class SQLGameDAOTest {
         String sql = "select id, whiteUsername, blackUsername, gameName, chessGame from games;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             var res = stmt.executeQuery();
+            res.next();
             while (res.next()) {
                 count++;
             }
@@ -119,31 +123,65 @@ class SQLGameDAOTest {
     }
 
     @Test
-    void createGameValid() {
+    void createGameValid() throws DataAccessException {
+        int expectedCount = getCount() + 1;
+        int testId = gameDAO.createGame(new AuthData("abc123", "nightblood"), "test");
+
+        assertTrue(attemptFindGame(testId));
+        assertEquals(expectedCount, getCount());
     }
 
     @Test
     void createGameInvalid() {
+        var auth = new AuthData("abc123", "nightblood");
+        assertThrows(DataAccessException.class, () -> gameDAO.createGame(auth, null));
     }
 
     @Test
-    void getGameValid() {
+    void getGameValid() throws DataAccessException {
+        clearTestGames();
+        addGames();
+        var auth = new AuthData("abc123", "nightblood");
+
+        var testId = testGames[0].gameID();
+        assertEquals(testGames[0], gameDAO.getGame(auth, testId));
+
     }
 
     @Test
-    void getGameInvalid() {
+    void getGameInvalid() throws DataAccessException {
+        clearTestGames();
+        addGames();
+        var testId = testGames[0].gameID();
+        var auth = new AuthData("abc123", "nightblood");
+        clearTestGames();
+
+        assertThrows(DataAccessException.class, () -> gameDAO.getGame(auth, testId));
     }
 
     @Test
-    void updateGameValid() {
+    void updateGameValid() throws DataAccessException {
+        clearTestGames();
+        addGames();
+
+        var newGame = testGames[0];
+        assertDoesNotThrow(() -> gameDAO.updateGame(newGame));
     }
 
     @Test
-    void updateGameInvalid() {
+    void updateGameInvalid() throws DataAccessException {
+        clearTestGames();
+        addGames();
+        var newGame = testGames[0];
+        clearTestGames();
+
+        assertThrows(DataAccessException.class, () -> gameDAO.updateGame(newGame));
     }
 
     @Test
-    void clearValid() {
+    void clearValid() throws DataAccessException {
+        gameDAO.clear();
+        assertEquals(0, getCount());
     }
 
 }
