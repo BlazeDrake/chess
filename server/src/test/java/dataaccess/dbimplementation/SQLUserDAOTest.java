@@ -55,19 +55,6 @@ class SQLUserDAOTest {
         }
     }
 
-    private boolean attemptFindUser(String username) throws DataAccessException {
-
-        boolean returnVal;
-        String sql = "select username, password, email from users where username = ?;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, username);
-            returnVal = stmt.executeQuery().next();
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
-        return returnVal;
-    }
-
     private int getCount() throws DataAccessException {
         int count = 0;
         String sql = "select username, password, email from users;";

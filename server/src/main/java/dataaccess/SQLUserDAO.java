@@ -1,7 +1,6 @@
 package dataaccess;
 
 import dataaccess.interfaces.UserDAO;
-import network.datamodels.AuthData;
 import network.datamodels.UserData;
 
 import java.sql.Connection;
@@ -51,11 +50,6 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "truncate table " + tableVal + ";";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
+        ClearUtil.clearDB(tableVal, connection);
     }
 }

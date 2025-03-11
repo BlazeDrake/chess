@@ -23,7 +23,7 @@ public class ChessGame {
     private ChessPosition enPassantPos;
 
 
-    private static final CheckCalculator[] checkCalculators = {
+    private static final CheckCalculator[] CHECK_CALCULATORS = {
             new CheckCalculator(new BishopMovesCalculator(), List.of(
                     ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.BISHOP
             )),
@@ -304,7 +304,7 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
 
-        for (var calculator : checkCalculators) {
+        for (var calculator : CHECK_CALCULATORS) {
             ChessPosition kingPos = teamColor == TeamColor.BLACK ? blackKing.getPos() : whiteKing.getPos();
             for (var pos : calculator.getCalculator().pieceMoves(board, kingPos)) {
                 //If a piece could move to the king's position & isn't the same team, the king is in check
