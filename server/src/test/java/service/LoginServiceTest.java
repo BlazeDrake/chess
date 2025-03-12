@@ -8,6 +8,7 @@ import network.requests.LoginRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -35,8 +36,8 @@ class LoginServiceTest {
         service = new LoginService(userDAO, new SQLAuthDAO(connection));
 
         DatabaseManager.reset();
-
-        userDAO.createUser(new UserData("nightblood", "evil", "ex@roshar.com"));
+        String hash = BCrypt.hashpw("evil", BCrypt.gensalt());
+        userDAO.createUser(new UserData("nightblood", hash, "ex@roshar.com"));
     }
 
 
