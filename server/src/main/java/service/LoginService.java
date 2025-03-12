@@ -7,6 +7,7 @@ import dataaccess.interfaces.UserDAO;
 
 import network.requests.LoginRequest;
 import network.results.LoginResult;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class LoginService {
     UserDAO loginDAO;
@@ -19,7 +20,7 @@ public class LoginService {
 
     public LoginResult login(LoginRequest request) throws DataAccessException {
         var user = loginDAO.getUser(request.username());
-        if (user == null || !request.password().equals(user.password())) {
+        if (user == null || !BCrypt.checkpw(request.password(), user.password())) {
             throw new UnauthorizedException("Error: unauthorized");
         }
 
