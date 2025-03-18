@@ -1,6 +1,9 @@
 package server;
 
 import com.google.gson.Gson;
+import network.datamodels.UserData;
+import network.requests.*;
+import network.results.*;
 
 import java.io.*;
 import java.net.*;
@@ -15,6 +18,20 @@ public class ServerFacade {
     }
 
     //server methods
+    //FIXME: move handleError to the CLI handler, to localize printing errors. Put try catch around each run
+    private void handleError(ResponseException ex) {
+        String msg = switch (ex.StatusCode()) {
+            case 400 -> "Error: bad command. Double check it.";
+            case 401 -> "Error: unauthorized";
+            case 403 -> "Error: already taken";
+            default -> "Internal error";
+        };
+        System.out.println(msg);
+    }
+
+    public void register(UserData req) throws ResponseException {
+        makeRequest("POST", "/user", req, RegisterResult.class);
+    }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
@@ -50,7 +67,7 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {
-                    throw ResponseException.fromJson(respErr);
+                    throw ResponseException.fromJson(respErr, status);
                 }
             }
 
