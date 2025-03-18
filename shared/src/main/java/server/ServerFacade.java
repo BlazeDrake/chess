@@ -33,6 +33,10 @@ public class ServerFacade {
         makeRequest("POST", "/user", req, RegisterResult.class);
     }
 
+    public LoginResult login(UserData req) throws ResponseException {
+        return makeRequest("POST", "/session", req, LoginResult.class);
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
