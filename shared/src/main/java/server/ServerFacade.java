@@ -18,17 +18,6 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    //server methods
-    //FIXME: move handleError to the CLI handler, to localize printing errors. Put try catch around each run
-    private void handleError(ResponseException ex) {
-        String msg = switch (ex.StatusCode()) {
-            case 400 -> "Error: bad command. Double check it.";
-            case 401 -> "Error: unauthorized";
-            case 403 -> "Error: already taken";
-            default -> "Internal error";
-        };
-        System.out.println(msg);
-    }
 
     public void register(UserData req) throws ResponseException {
         makeRequest("POST", "/user", req, RegisterResult.class, null);
