@@ -42,6 +42,10 @@ public class ServerFacade {
         return makeRequest("GET", "/game", null, ListGamesResult.class, req.authToken());
     }
 
+    public void createGame(CreateGameRequest req) throws ResponseException {
+        makeRequest("POST", "/game", req, CreateGameRequest.class, req.authToken());
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
@@ -49,8 +53,8 @@ public class ServerFacade {
             http.setRequestMethod(method);
             http.setDoOutput(true);
 
-            writeBody(request, http);
             writeAuth(authToken, http);
+            writeBody(request, http);
 
             http.connect();
             throwIfNotSuccessful(http);
@@ -75,7 +79,7 @@ public class ServerFacade {
 
     private static void writeAuth(String authToken, HttpURLConnection http) {
         if (authToken != null) {
-            http.addRequestProperty("authorization", authToken);
+            http.setRequestProperty("authorization", authToken);
         }
     }
 

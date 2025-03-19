@@ -6,6 +6,7 @@ import dataaccess.*;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
+import network.requests.CreateGameRequest;
 import network.requests.ListGamesRequest;
 import network.results.LoginResult;
 import org.junit.jupiter.api.*;
@@ -68,6 +69,20 @@ public class ServerFacadeTests {
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
+    }
+
+    private int getGameCount() throws DataAccessException {
+        int count = 0;
+        String sql = "select id, whiteUsername, blackUsername, gameName, chessGame from games;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            var res = stmt.executeQuery();
+            while (res.next()) {
+                count++;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+        return count;
     }
 
     @BeforeAll
@@ -174,6 +189,24 @@ public class ServerFacadeTests {
     public void testListInvalid() throws DataAccessException {
         try {
             facade.listGames(new ListGamesRequest("e"));
+            Assertions.fail("Did not throw an unauthorized error");
+        } catch (ResponseException e) {
+            Assertions.assertEquals(401, e.StatusCode());
+        }
+    }
+
+    @Test
+    public void createGameValid() throws DataAccessException, ResponseException {
+        var auth = new AuthData("abc123", "heraldOfWind");
+        insertAuth(auth);
+        facade.createGame(new CreateGameRequest(auth.authToken(), "test"));
+        Assertions.assertEquals(1, getGameCount());
+    }
+
+    @Test
+    public void creategameInvalid() {
+        try {
+            facade.createGame(new CreateGameRequest("e", "test"));
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
             Assertions.assertEquals(401, e.StatusCode());
