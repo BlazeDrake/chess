@@ -196,6 +196,23 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void testLogoutValid() throws DataAccessException {
+        var auth = new AuthData("abc123", "heraldOfWind");
+        insertAuth(auth);
+        Assertions.assertDoesNotThrow(() -> facade.logout(auth.authToken()));
+    }
+
+    @Test
+    public void testLogoutInvalid() {
+        try {
+            facade.logout("e");
+            Assertions.fail("Did not throw an unauthorized error");
+        } catch (ResponseException e) {
+            Assertions.assertEquals(401, e.StatusCode());
+        }
+    }
+
+    @Test
     public void testListValid() throws DataAccessException, ResponseException {
         var auth = new AuthData("abc123", "heraldOfWind");
         var game = new GameData(1, "szeth", "nightblood", "syl", new ChessGame());
@@ -247,12 +264,28 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void joinGameInvalid() {
+    public void joinGameInvalidUnauthorized() {
         try {
             facade.joinGame(new JoinGameRequest("e", "WHITE", 1));
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
             Assertions.assertEquals(401, e.StatusCode());
+        }
+    }
+
+    @Test
+    public void joinGameInvalidTaken() throws DataAccessException {
+        var auth = new AuthData("abc123", "heraldOfWind");
+        var game = new GameData(1, "Taln", "syl", "braize", new ChessGame());
+        insertAuth(auth);
+        insertGame(game);
+
+
+        try {
+            facade.joinGame(new JoinGameRequest(auth.authToken(), "WHITE", game.gameID()));
+            Assertions.fail("Did not throw a taken error");
+        } catch (ResponseException e) {
+            Assertions.assertEquals(403, e.StatusCode());
         }
     }
 

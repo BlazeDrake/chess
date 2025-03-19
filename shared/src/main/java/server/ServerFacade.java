@@ -38,6 +38,10 @@ public class ServerFacade {
         return makeRequest("POST", "/session", req, LoginResult.class, null);
     }
 
+    public void logout(String authToken) throws ResponseException {
+        makeRequest("DELETE", "/session", null, Object.class, authToken);
+    }
+
     public ListGamesResult listGames(ListGamesRequest req) throws ResponseException {
         return makeRequest("GET", "/game", null, ListGamesResult.class, req.authToken());
     }
@@ -47,7 +51,7 @@ public class ServerFacade {
     }
 
     public void joinGame(JoinGameRequest req) throws ResponseException {
-        makeRequest("PUT", "/game", req, JoinGameRequest.class, req.authToken());
+        makeRequest("PUT", "/game", req, Object.class, req.authToken());
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
