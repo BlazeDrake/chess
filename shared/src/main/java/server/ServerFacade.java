@@ -46,6 +46,10 @@ public class ServerFacade {
         makeRequest("POST", "/game", req, CreateGameRequest.class, req.authToken());
     }
 
+    public void joinGame(JoinGameRequest req) throws ResponseException {
+        makeRequest("PUT", "/game", req, JoinGameRequest.class, req.authToken());
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();

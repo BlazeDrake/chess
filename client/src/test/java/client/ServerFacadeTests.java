@@ -7,6 +7,7 @@ import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
+import network.requests.JoinGameRequest;
 import network.requests.ListGamesRequest;
 import network.results.LoginResult;
 import org.junit.jupiter.api.*;
@@ -24,7 +25,6 @@ public class ServerFacadeTests {
     private static ServerFacade facade;
 
     private static Connection connection;
-
 
     private static void insertUser(UserData userData) throws DataAccessException {
         String hash = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
@@ -83,6 +83,28 @@ public class ServerFacadeTests {
             throw new DataAccessException(e.getMessage());
         }
         return count;
+    }
+
+    private static GameData getGame(int id) throws DataAccessException {
+        Gson gson = new Gson();
+        GameData gameData = null;
+        String sql = "select whiteUsername, blackUsername, gameName, chessGame from games where id = ?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            var res = stmt.executeQuery();
+            if (res.next()) {
+                String whiteUsername = res.getString(1);
+                String blackUsername = res.getString(2);
+                String gameName = res.getString(3);
+                String gameJson = res.getString(4);
+                ChessGame game = gson.fromJson(gameJson, ChessGame.class);
+                gameData = new GameData(id, whiteUsername, blackUsername, gameName, game);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+
+        return gameData;
     }
 
     @BeforeAll
@@ -204,9 +226,30 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void creategameInvalid() {
+    public void createGameInvalid() {
         try {
             facade.createGame(new CreateGameRequest("e", "test"));
+            Assertions.fail("Did not throw an unauthorized error");
+        } catch (ResponseException e) {
+            Assertions.assertEquals(401, e.StatusCode());
+        }
+    }
+
+    @Test
+    public void joinGameValid() throws DataAccessException, ResponseException {
+        var auth = new AuthData("abc123", "heraldOfWind");
+        var game = new GameData(1, null, "syl", "braize", new ChessGame());
+        insertAuth(auth);
+        insertGame(game);
+
+        facade.joinGame(new JoinGameRequest(auth.authToken(), "WHITE", game.gameID()));
+        Assertions.assertEquals(auth.username(), getGame(game.gameID()).whiteUsername());
+    }
+
+    @Test
+    public void joinGameInvalid() {
+        try {
+            facade.joinGame(new JoinGameRequest("e", "WHITE", 1));
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
             Assertions.assertEquals(401, e.StatusCode());
