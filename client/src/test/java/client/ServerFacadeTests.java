@@ -1,7 +1,12 @@
 package client;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.*;
+import network.datamodels.AuthData;
+import network.datamodels.GameData;
 import network.datamodels.UserData;
+import network.requests.ListGamesRequest;
 import network.results.LoginResult;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
@@ -9,9 +14,7 @@ import server.ResponseException;
 import server.Server;
 import server.ServerFacade;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 
 public class ServerFacadeTests {
@@ -30,6 +33,38 @@ public class ServerFacadeTests {
             stmt.setString(2, hash);
             stmt.setString(3, userData.email());
             stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
+
+    private static void insertAuth(AuthData authData) throws DataAccessException {
+        String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, authData.authToken());
+            stmt.setString(2, authData.username());
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
+
+    private static void insertGame(GameData game) throws DataAccessException {
+        var gson = new Gson();
+        String sql = "INSERT INTO games (whiteUsername, blackUsername, gameName, chessGame) VALUES (?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql,
+                Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, game.whiteUsername());
+            stmt.setString(2, game.blackUsername());
+            stmt.setString(3, game.gameName());
+            stmt.setString(4, gson.toJson(game.game()));
+            if (stmt.executeUpdate() == 1) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    generatedKeys.next();
+                    int id = generatedKeys.getInt(1); // ID of the inserted book
+                    game = new GameData(id, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+                }
+            }
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
@@ -117,7 +152,29 @@ public class ServerFacadeTests {
 
         try {
             facade.login(req);
-            Assertions.fail("Did not throw an error fro duplicate registration");
+            Assertions.fail("Did not throw an unauthorized error");
+        } catch (ResponseException e) {
+            Assertions.assertEquals(401, e.StatusCode());
+        }
+    }
+
+    @Test
+    public void testListValid() throws DataAccessException, ResponseException {
+        var auth = new AuthData("abc123", "heraldOfWind");
+        var game = new GameData(1, "szeth", "nightblood", "syl", new ChessGame());
+        insertAuth(auth);
+        insertGame(game);
+
+        var res = facade.listGames(new ListGamesRequest(auth.authToken()));
+        Assertions.assertEquals(1, res.games().size());
+        Assertions.assertTrue(res.games().contains(game));
+    }
+
+    @Test
+    public void testListInvalid() throws DataAccessException {
+        try {
+            facade.listGames(new ListGamesRequest("e"));
+            Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
             Assertions.assertEquals(401, e.StatusCode());
         }

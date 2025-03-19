@@ -7,6 +7,7 @@ import network.results.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.List;
 
 
 public class ServerFacade {
@@ -30,21 +31,26 @@ public class ServerFacade {
     }
 
     public void register(UserData req) throws ResponseException {
-        makeRequest("POST", "/user", req, RegisterResult.class);
+        makeRequest("POST", "/user", req, RegisterResult.class, null);
     }
 
     public LoginResult login(UserData req) throws ResponseException {
-        return makeRequest("POST", "/session", req, LoginResult.class);
+        return makeRequest("POST", "/session", req, LoginResult.class, null);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    public ListGamesResult listGames(ListGamesRequest req) throws ResponseException {
+        return makeRequest("GET", "/game", null, ListGamesResult.class, req.authToken());
+    }
+
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
 
-            writeBody(request, http);
+            writeBody(request, http, authToken);
+
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
@@ -56,13 +62,17 @@ public class ServerFacade {
     }
 
 
-    private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+    private static void writeBody(Object request, HttpURLConnection http, String authToken) throws IOException {
         if (request != null) {
             http.addRequestProperty("Content-Type", "application/json");
             String reqData = new Gson().toJson(request);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
             }
+        }
+
+        if (authToken != null) {
+            http.addRequestProperty("authorization", authToken);
         }
     }
 
