@@ -1,4 +1,5 @@
 import network.datamodels.UserData;
+import network.requests.CreateGameRequest;
 import network.requests.ListGamesRequest;
 import server.ResponseException;
 import server.ServerFacade;
@@ -131,7 +132,14 @@ public class CommandEval {
                 yield builder.toString();
             }
             case "create" -> {
-                yield "fixme";
+                checkCount(args.length, 2);
+                int id = facade.createGame(new CreateGameRequest(authToken, args[1]));
+                StringBuilder builder = new StringBuilder("Created Game:");
+                builder.append("\n    Game name: ");
+                builder.append(args[1]);
+                builder.append("\n    Game ID: ");
+                builder.append(id);
+                yield builder.toString();
             }
             case "join" -> {
                 yield "fixme";
