@@ -73,14 +73,9 @@ public class CommandEval {
             }
 
             case "quit" -> "Quitting client. Goodbye";
-            default -> throw new ResponseException(400, "Error: Unknown Command " + input);
+            default ->
+                    throw new ResponseException(400, "Error: Unknown Command " + input + ". Use help to see a list of commands");
         };
-    }
-
-    private static void checkCount(int length, int expected) throws ResponseException {
-        if (length != expected) {
-            throw new ResponseException(400, "Error: Incorrect number of arguments; expected " + expected);
-        }
     }
 
     private String loggedInCommand(String input) throws ResponseException {
@@ -135,6 +130,15 @@ public class CommandEval {
                 }
                 yield builder.toString();
             }
+            case "create" -> {
+                yield "fixme";
+            }
+            case "join" -> {
+                yield "fixme";
+            }
+            case "observe" -> {
+                yield "fixme";
+            }
             case "logout" -> {
                 facade.logout(authToken);
                 username = loggedOutString;
@@ -143,8 +147,15 @@ public class CommandEval {
                 yield "Logged out successfully. Goodbye";
             }
             case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");
-            default -> throw new ResponseException(400, "Error: Unknown Command " + input);
+            default ->
+                    throw new ResponseException(400, "Error: Unknown Command " + input + ". Use help to see a list of commands");
         };
+    }
+
+    private static void checkCount(int length, int expected) throws ResponseException {
+        if (length != expected) {
+            throw new ResponseException(400, "Error: Incorrect number of arguments; expected " + (expected - 1));
+        }
     }
 
     private String commandInfo(String name, String info, String format) {
