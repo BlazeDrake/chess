@@ -21,15 +21,15 @@ public class CommandEval {
         username = loggedOutString;
         System.out.println("Welcome to Chess client!");
         do {
-            System.out.print(EscapeSequences.SET_TEXT_BOLD + "[" + username + "]: " +
-                    EscapeSequences.SET_TEXT_BLINKING + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+            System.out.print(EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + EscapeSequences.SET_TEXT_BOLD +
+                    "[" + username + "]: ");
             input = scanner.nextLine();
             try {
                 if (loggedIn) {
-                    System.out.println(loggedInCommand(input));
+                    System.out.println(EscapeSequences.SET_TEXT_BOLD_AND_BLUE + loggedInCommand(input));
                 }
                 else {
-                    System.out.println(loggedOutCommand(input));
+                    System.out.println(EscapeSequences.SET_TEXT_BOLD_AND_BLUE + loggedOutCommand(input));
                 }
             } catch (ResponseException ex) {
                 handleError(ex);
@@ -38,22 +38,40 @@ public class CommandEval {
         while (loggedIn || !"quit".equals(input));
     }
 
-    private String loggedInCommand(String input) throws ResponseException {
+    private String loggedOutCommand(String input) throws ResponseException {
         return switch (input) {
-            case "help" -> """
-                    Logged in commands:
-                    """;
+            case "help" -> "Logged out commands: \n" +
+                    commandInfo("help",
+                            "Displays this dialog",
+                            "help") +
+                    commandInfo("login",
+                            "Logs the user in. Will provide access to the List, Create, Join, and Observe commands."
+                                    + "    Use help after logging in for more info.",
+                            "login <username> <password>") +
+                    commandInfo("register",
+                            "Registers a new user.",
+                            "register <username> <password> <email>") +
+                    commandInfo("quit",
+                            "Exits the client",
+                            "quit");
+            case "quit" -> "Quitting client. Goodbye";
             default -> throw new ResponseException(400, "Unknown Command " + input);
         };
     }
 
-    private String loggedOutCommand(String input) throws ResponseException {
+    private String loggedInCommand(String input) throws ResponseException {
         return switch (input) {
-            case "help" -> """
-                    Logged out commands:
-                    """;
+            case "help" -> EscapeSequences.SET_TEXT_BOLD_AND_BLUE +
+                    "Logged in commands: \n";
+            case "quit" -> throw new ResponseException(400, "Must log out before quitting");
             default -> throw new ResponseException(400, "Unknown Command " + input);
         };
+    }
+
+    private String commandInfo(String name, String info, String format) {
+        return EscapeSequences.SET_TEXT_BOLD_AND_BLUE + name + "\n" +
+                "   " + EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + info + "\n" +
+                "   format: " + EscapeSequences.SET_TEXT_COLOR_GREEN + format + "\n";
     }
 
     private void handleError(ResponseException ex) {
@@ -63,6 +81,6 @@ public class CommandEval {
             case 403 -> "Error: already taken";
             default -> "Internal error";
         };
-        System.out.println(msg);
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + msg);
     }
 }
