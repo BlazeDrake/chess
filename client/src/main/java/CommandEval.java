@@ -1,4 +1,5 @@
 import network.datamodels.UserData;
+import network.requests.ListGamesRequest;
 import server.ResponseException;
 import server.ServerFacade;
 import ui.EscapeSequences;
@@ -72,13 +73,13 @@ public class CommandEval {
             }
 
             case "quit" -> "Quitting client. Goodbye";
-            default -> throw new ResponseException(400, "Unknown Command " + input);
+            default -> throw new ResponseException(400, "Error: Unknown Command " + input);
         };
     }
 
     private static void checkCount(int length, int expected) throws ResponseException {
         if (length != expected) {
-            throw new ResponseException(400, "Wrong number of args");
+            throw new ResponseException(400, "Error: Incorrect number of arguments; expected " + expected);
         }
     }
 
@@ -104,6 +105,36 @@ public class CommandEval {
                     commandInfo("logout",
                             "Log out.",
                             "logout");
+            case "list" -> {
+                var games = facade.listGames(new ListGamesRequest(authToken));
+                StringBuilder builder = new StringBuilder("Current Games:");
+                for (var game : games.games()) {
+                    builder.append("\n");
+                    builder.append(EscapeSequences.SET_TEXT_BOLD_AND_BLUE);
+                    builder.append(game.gameName());
+                    builder.append(": ");
+                    builder.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+                    builder.append("\n  ID: ");
+                    builder.append(game.gameID());
+                    var whiteUser = game.whiteUsername();
+                    if (whiteUser == null) {
+                        builder.append("\n  White is unclaimed");
+                    }
+                    else {
+                        builder.append("\n  White Player: ");
+                        builder.append(whiteUser);
+                    }
+                    var blackUser = game.blackUsername();
+                    if (blackUser == null) {
+                        builder.append("\n  Black is unclaimed");
+                    }
+                    else {
+                        builder.append("\n  Black Player: ");
+                        builder.append(blackUser);
+                    }
+                }
+                yield builder.toString();
+            }
             case "logout" -> {
                 facade.logout(authToken);
                 username = loggedOutString;
@@ -111,8 +142,8 @@ public class CommandEval {
                 loggedIn = false;
                 yield "Logged out successfully. Goodbye";
             }
-            case "quit" -> throw new ResponseException(400, "Must log out before quitting");
-            default -> throw new ResponseException(400, "Unknown Command " + input);
+            case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");
+            default -> throw new ResponseException(400, "Error: Unknown Command " + input);
         };
     }
 
@@ -124,7 +155,7 @@ public class CommandEval {
 
     private void handleError(ResponseException ex) {
         String msg = switch (ex.StatusCode()) {
-            case 400 -> "Error: unknown or malformatted command. Type help to see a list of commands";
+            case 400 -> ex.getMessage();
             case 401 -> "Error: unauthorized";
             case 403 -> "Error: already taken";
             default -> "Internal error";
