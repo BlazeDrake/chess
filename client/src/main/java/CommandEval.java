@@ -1,6 +1,7 @@
 import chess.*;
 import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
+import network.requests.JoinGameRequest;
 import network.requests.ListGamesRequest;
 import server.ResponseException;
 import server.ServerFacade;
@@ -21,6 +22,7 @@ public class CommandEval {
 
     public CommandEval(ServerFacade facade) {
         this.facade = facade;
+        gameIDList = new ArrayList<>();
     }
 
     public void run() {
@@ -151,12 +153,28 @@ public class CommandEval {
             }
             case "join" -> {
                 checkCount(args.length, 3);
-                var color = "WHITE".equals(args[2]) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+                var colorStr = args[2].toUpperCase();
+                ChessGame.TeamColor color;
 
+                int id = getGameId(args[1]);
+
+                if (colorStr.equals("WHITE")) {
+                    color = ChessGame.TeamColor.WHITE;
+                }
+                else if (colorStr.equals("BLACK")) {
+                    color = ChessGame.TeamColor.BLACK;
+                }
+                else {
+                    throw new ResponseException(400, "Invalid team color. Must be WHITE or BLACK");
+                }
+                facade.joinGame(new JoinGameRequest(authToken, colorStr, id));
                 yield drawBoard(new ChessGame(), color);
             }
             case "observe" -> {
-                yield "fixme";
+                checkCount(args.length, 2);
+
+                int id = getGameId(args[1]);
+                yield drawBoard(new ChessGame(), ChessGame.TeamColor.WHITE);
             }
             case "logout" -> {
                 facade.logout(authToken);
@@ -169,6 +187,18 @@ public class CommandEval {
             default ->
                     throw new ResponseException(400, "Error: Unknown Command " + input + ". Use help to see a list of commands");
         };
+    }
+
+    private int getGameId(String input) throws ResponseException {
+        try {
+            int inputId = Integer.parseInt(input) - 1;
+            if (inputId < 0 || inputId >= gameIDList.size()) {
+                throw new ResponseException(400, "Unknown game ID. Use list to see all games with their ID");
+            }
+            return gameIDList.get(inputId);
+        } catch (NumberFormatException e) {
+            throw new ResponseException(400, "Invalid game ID: Must be a number");
+        }
     }
 
     private static void checkCount(int length, int expected) throws ResponseException {
