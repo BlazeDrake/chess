@@ -250,6 +250,7 @@ public class CommandEval {
         builder.append(" ");
         builder.append(i);
         builder.append(" ");
+        builder.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
         for (int j = 1; j <= 8; j++) {
             builder.append((i + j) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_BROWN : EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
             var piece = board.getPiece(new ChessPosition(i, jOffset + (jMult * j)));
