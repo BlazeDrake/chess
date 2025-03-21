@@ -1,4 +1,4 @@
-import serverFacade.ServerFacade;
+import facade.ServerFacade;
 
 public class Main {
     public static void main(String[] args) {

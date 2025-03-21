@@ -12,9 +12,9 @@ import network.requests.ListGamesRequest;
 import network.results.LoginResult;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
-import serverFacade.ResponseException;
+import facade.ResponseException;
 import server.Server;
-import serverFacade.ServerFacade;
+import facade.ServerFacade;
 
 import java.sql.*;
 

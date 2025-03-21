@@ -4,8 +4,8 @@ import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
 import network.requests.JoinGameRequest;
 import network.requests.ListGamesRequest;
-import serverFacade.ResponseException;
-import serverFacade.ServerFacade;
+import facade.ResponseException;
+import facade.ServerFacade;
 import ui.EscapeSequences;
 
 import java.util.ArrayList;
