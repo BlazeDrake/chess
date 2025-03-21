@@ -45,6 +45,7 @@ public class EscapeSequences {
     public static final String SET_BG_COLOR_BLUE = SET_BG_COLOR + "12m";
     public static final String SET_BG_COLOR_MAGENTA = SET_BG_COLOR + "5m";
     public static final String SET_BG_COLOR_WHITE = SET_BG_COLOR + "15m";
+    public static final String SET_BG_COLOR_BROWN = SET_BG_COLOR + "58m";
     public static final String RESET_BG_COLOR = UNICODE_ESCAPE + "[49m";
 
     public static final String SET_TEXT_BOLD_AND_BLUE = SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE;
@@ -62,7 +63,9 @@ public class EscapeSequences {
     public static final String BLACK_KNIGHT = " ♞ ";
     public static final String BLACK_ROOK = " ♜ ";
     public static final String BLACK_PAWN = " ♟ ";
-    public static final String EMPTY = " \u2003 ";
+    public static final String EMPTY = "\u2003  ";
+
+    public static final String ROW_COL_FORMAT = SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_BLUE;
 
     public static String moveCursorToLocation(int x, int y) {
         return UNICODE_ESCAPE + "[" + y + ";" + x + "H";

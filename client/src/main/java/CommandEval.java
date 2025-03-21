@@ -1,4 +1,4 @@
-import chess.ChessGame;
+import chess.*;
 import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
 import network.requests.ListGamesRequest;
@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CommandEval {
-    private static final String loggedOutString = "LoggedOut";
+    private static final String LOGGED_OUT_STRING = "LoggedOut";
+    private static final String WHITE_COLS = EscapeSequences.ROW_COL_FORMAT + "    a   b   c  d   e  f   g  h     " + EscapeSequences.RESET_BG_COLOR;
+    private static final String BLACK_COLS = EscapeSequences.ROW_COL_FORMAT + "    h   g   f  e   d  c   b  a     " + EscapeSequences.RESET_BG_COLOR;
     private ServerFacade facade;
     private boolean loggedIn;
     private String username;
@@ -25,7 +27,7 @@ public class CommandEval {
         var scanner = new Scanner(System.in);
         String input;
         loggedIn = false;
-        username = loggedOutString;
+        username = LOGGED_OUT_STRING;
         System.out.println("Welcome to Chess client!");
         do {
             System.out.print(EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + EscapeSequences.SET_TEXT_BOLD +
@@ -148,14 +150,17 @@ public class CommandEval {
                 yield builder.toString();
             }
             case "join" -> {
-                yield "fixme";
+                checkCount(args.length, 3);
+                var color = "WHITE".equals(args[2]) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+
+                yield drawBoard(new ChessGame(), color);
             }
             case "observe" -> {
                 yield "fixme";
             }
             case "logout" -> {
                 facade.logout(authToken);
-                username = loggedOutString;
+                username = LOGGED_OUT_STRING;
                 authToken = "";
                 loggedIn = false;
                 yield "Logged out successfully. Goodbye";
@@ -178,9 +183,76 @@ public class CommandEval {
                 "   format: " + EscapeSequences.SET_TEXT_COLOR_GREEN + format + "\n";
     }
 
-    private void drawBoard(ChessGame game, ChessGame.TeamColor playerColor) {
+    private String drawBoard(ChessGame game, ChessGame.TeamColor playerColor) {
         var board = game.getBoard();
+        StringBuilder builder = new StringBuilder();
+        //Print column letters
+        if (playerColor == ChessGame.TeamColor.BLACK) {
+            //black perspective
+            builder.append(BLACK_COLS);
+            builder.append("\n");
+            for (int i = 1; i <= 8; i++) {
+                printRow(board, i, builder, -1, 9);
+            }
+            builder.append(BLACK_COLS);
 
+        }
+        else {
+            //white perspective
+            builder.append(WHITE_COLS);
+            builder.append("\n");
+            for (int i = 8; i >= 1; i--) {
+                printRow(board, i, builder, 1, 0);
+            }
+            builder.append(WHITE_COLS);
+        }
+
+        return builder.toString();
+    }
+
+    private void printRow(ChessBoard board, int i, StringBuilder builder, int jMult, int jOffset) {
+        builder.append(EscapeSequences.ROW_COL_FORMAT);
+        builder.append(" ");
+        builder.append(i);
+        builder.append(" ");
+        for (int j = 1; j <= 8; j++) {
+            builder.append((i + j) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_BROWN : EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
+            var piece = board.getPiece(new ChessPosition(i, jOffset + (jMult * j)));
+            builder.append(printPiece(piece));
+        }
+        builder.append(EscapeSequences.ROW_COL_FORMAT);
+        builder.append(" ");
+        builder.append(i);
+        builder.append(" ");
+        builder.append(EscapeSequences.RESET_BG_COLOR);
+        builder.append("\n");
+    }
+
+    private String printPiece(ChessPiece piece) {
+
+        if (piece == null) {
+            return EscapeSequences.EMPTY;
+        }
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            return EscapeSequences.SET_TEXT_COLOR_WHITE + switch (piece.getPieceType()) {
+                case KING -> EscapeSequences.WHITE_KING;
+                case QUEEN -> EscapeSequences.WHITE_QUEEN;
+                case BISHOP -> EscapeSequences.WHITE_BISHOP;
+                case KNIGHT -> EscapeSequences.WHITE_KNIGHT;
+                case ROOK -> EscapeSequences.WHITE_ROOK;
+                case PAWN -> EscapeSequences.WHITE_PAWN;
+            };
+        }
+        else {
+            return EscapeSequences.SET_TEXT_COLOR_BLACK + switch (piece.getPieceType()) {
+                case KING -> EscapeSequences.BLACK_KING;
+                case QUEEN -> EscapeSequences.BLACK_QUEEN;
+                case BISHOP -> EscapeSequences.BLACK_BISHOP;
+                case KNIGHT -> EscapeSequences.BLACK_KNIGHT;
+                case ROOK -> EscapeSequences.BLACK_ROOK;
+                case PAWN -> EscapeSequences.BLACK_PAWN;
+            };
+        }
     }
 
     private void handleError(ResponseException ex) {
