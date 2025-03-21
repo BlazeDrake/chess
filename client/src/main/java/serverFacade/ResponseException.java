@@ -1,4 +1,4 @@
-package server;
+package serverFacade;
 
 import com.google.gson.Gson;
 
@@ -32,7 +32,7 @@ public class ResponseException extends Exception {
         return new ResponseException(status, message);
     }
 
-    public int StatusCode() {
+    public int statusCode() {
         return statusCode;
     }
 }

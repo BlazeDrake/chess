@@ -1,4 +1,4 @@
-package server;
+package serverFacade;
 
 import com.google.gson.Gson;
 import network.datamodels.UserData;
@@ -7,7 +7,6 @@ import network.results.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.List;
 
 
 public class ServerFacade {

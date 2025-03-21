@@ -12,9 +12,9 @@ import network.requests.ListGamesRequest;
 import network.results.LoginResult;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
-import server.ResponseException;
+import serverFacade.ResponseException;
 import server.Server;
-import server.ServerFacade;
+import serverFacade.ServerFacade;
 
 import java.sql.*;
 
@@ -160,7 +160,7 @@ public class ServerFacadeTests {
             facade.register(req);
             Assertions.fail("Did not throw an error fro duplicate registration");
         } catch (ResponseException e) {
-            Assertions.assertEquals(403, e.StatusCode());
+            Assertions.assertEquals(403, e.statusCode());
         }
     }
 
@@ -191,7 +191,7 @@ public class ServerFacadeTests {
             facade.login(req);
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
-            Assertions.assertEquals(401, e.StatusCode());
+            Assertions.assertEquals(401, e.statusCode());
         }
     }
 
@@ -208,7 +208,7 @@ public class ServerFacadeTests {
             facade.logout("e");
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
-            Assertions.assertEquals(401, e.StatusCode());
+            Assertions.assertEquals(401, e.statusCode());
         }
     }
 
@@ -230,7 +230,7 @@ public class ServerFacadeTests {
             facade.listGames(new ListGamesRequest("e"));
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
-            Assertions.assertEquals(401, e.StatusCode());
+            Assertions.assertEquals(401, e.statusCode());
         }
     }
 
@@ -248,7 +248,7 @@ public class ServerFacadeTests {
             facade.createGame(new CreateGameRequest("e", "test"));
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
-            Assertions.assertEquals(401, e.StatusCode());
+            Assertions.assertEquals(401, e.statusCode());
         }
     }
 
@@ -269,7 +269,7 @@ public class ServerFacadeTests {
             facade.joinGame(new JoinGameRequest("e", "WHITE", 1));
             Assertions.fail("Did not throw an unauthorized error");
         } catch (ResponseException e) {
-            Assertions.assertEquals(401, e.StatusCode());
+            Assertions.assertEquals(401, e.statusCode());
         }
     }
 
@@ -285,7 +285,7 @@ public class ServerFacadeTests {
             facade.joinGame(new JoinGameRequest(auth.authToken(), "WHITE", game.gameID()));
             Assertions.fail("Did not throw a taken error");
         } catch (ResponseException e) {
-            Assertions.assertEquals(403, e.StatusCode());
+            Assertions.assertEquals(403, e.statusCode());
         }
     }
 

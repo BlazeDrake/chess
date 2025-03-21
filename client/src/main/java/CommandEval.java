@@ -1,10 +1,11 @@
 import chess.*;
+import network.datamodels.GameData;
 import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
 import network.requests.JoinGameRequest;
 import network.requests.ListGamesRequest;
-import server.ResponseException;
-import server.ServerFacade;
+import serverFacade.ResponseException;
+import serverFacade.ServerFacade;
 import ui.EscapeSequences;
 
 import java.util.ArrayList;
@@ -115,31 +116,8 @@ public class CommandEval {
                 int i = 0;
                 for (var game : games.games()) {
                     i++;
-                    builder.append("\n");
-                    builder.append(EscapeSequences.SET_TEXT_BOLD_AND_BLUE);
-                    builder.append(i);
-                    builder.append(" - ");
-                    builder.append(game.gameName());
-                    builder.append(": ");
-                    builder.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
                     gameIDList.add(game.gameID());
-
-                    var whiteUser = game.whiteUsername();
-                    if (whiteUser == null) {
-                        builder.append("\n  White is unclaimed");
-                    }
-                    else {
-                        builder.append("\n  White Player: ");
-                        builder.append(whiteUser);
-                    }
-                    var blackUser = game.blackUsername();
-                    if (blackUser == null) {
-                        builder.append("\n  Black is unclaimed");
-                    }
-                    else {
-                        builder.append("\n  Black Player: ");
-                        builder.append(blackUser);
-                    }
+                    displayGame(game, builder, i);
                 }
                 yield builder.toString();
             }
@@ -187,6 +165,33 @@ public class CommandEval {
             default ->
                     throw new ResponseException(400, "Error: Unknown Command " + input + ". Use help to see a list of commands");
         };
+    }
+
+    private static void displayGame(GameData game, StringBuilder builder, int i) {
+        builder.append("\n");
+        builder.append(EscapeSequences.SET_TEXT_BOLD_AND_BLUE);
+        builder.append(i);
+        builder.append(" - ");
+        builder.append(game.gameName());
+        builder.append(": ");
+        builder.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+
+        var whiteUser = game.whiteUsername();
+        if (whiteUser == null) {
+            builder.append("\n  White is unclaimed");
+        }
+        else {
+            builder.append("\n  White Player: ");
+            builder.append(whiteUser);
+        }
+        var blackUser = game.blackUsername();
+        if (blackUser == null) {
+            builder.append("\n  Black is unclaimed");
+        }
+        else {
+            builder.append("\n  Black Player: ");
+            builder.append(blackUser);
+        }
     }
 
     private int getGameId(String input) throws ResponseException {
@@ -286,7 +291,7 @@ public class CommandEval {
     }
 
     private void handleError(ResponseException ex) {
-        String msg = switch (ex.StatusCode()) {
+        String msg = switch (ex.statusCode()) {
             case 400 -> ex.getMessage();
             case 401 -> "Error: unauthorized";
             case 403 -> "Error: already taken";
