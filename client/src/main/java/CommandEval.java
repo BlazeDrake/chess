@@ -1,3 +1,4 @@
+import chess.ChessGame;
 import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
 import network.requests.ListGamesRequest;
@@ -5,6 +6,7 @@ import server.ResponseException;
 import server.ServerFacade;
 import ui.EscapeSequences;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CommandEval {
@@ -13,6 +15,7 @@ public class CommandEval {
     private boolean loggedIn;
     private String username;
     private String authToken;
+    private ArrayList<Integer> gameIDList;
 
     public CommandEval(ServerFacade facade) {
         this.facade = facade;
@@ -103,15 +106,20 @@ public class CommandEval {
                             "logout");
             case "list" -> {
                 var games = facade.listGames(new ListGamesRequest(authToken));
+                gameIDList = new ArrayList<>();
                 StringBuilder builder = new StringBuilder("Current Games:");
+                int i = 0;
                 for (var game : games.games()) {
+                    i++;
                     builder.append("\n");
                     builder.append(EscapeSequences.SET_TEXT_BOLD_AND_BLUE);
+                    builder.append(i);
+                    builder.append(" - ");
                     builder.append(game.gameName());
                     builder.append(": ");
                     builder.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
-                    builder.append("\n  ID: ");
-                    builder.append(game.gameID());
+                    gameIDList.add(game.gameID());
+
                     var whiteUser = game.whiteUsername();
                     if (whiteUser == null) {
                         builder.append("\n  White is unclaimed");
@@ -133,12 +141,10 @@ public class CommandEval {
             }
             case "create" -> {
                 checkCount(args.length, 2);
-                int id = facade.createGame(new CreateGameRequest(authToken, args[1]));
+                facade.createGame(new CreateGameRequest(authToken, args[1]));
                 StringBuilder builder = new StringBuilder("Created Game:");
                 builder.append("\n    Game name: ");
                 builder.append(args[1]);
-                builder.append("\n    Game ID: ");
-                builder.append(id);
                 yield builder.toString();
             }
             case "join" -> {
@@ -170,6 +176,11 @@ public class CommandEval {
         return EscapeSequences.SET_TEXT_BOLD_AND_BLUE + name + "\n" +
                 "   " + EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + info + "\n" +
                 "   format: " + EscapeSequences.SET_TEXT_COLOR_GREEN + format + "\n";
+    }
+
+    private void drawBoard(ChessGame game, ChessGame.TeamColor playerColor) {
+        var board = game.getBoard();
+
     }
 
     private void handleError(ResponseException ex) {

@@ -35,9 +35,8 @@ public class ServerFacade {
         return makeRequest("GET", "/game", null, ListGamesResult.class, req.authToken());
     }
 
-    public int createGame(CreateGameRequest req) throws ResponseException {
-        var res = makeRequest("POST", "/game", req, CreateGameResult.class, req.authToken());
-        return res.gameID();
+    public void createGame(CreateGameRequest req) throws ResponseException {
+        makeRequest("POST", "/game", req, CreateGameResult.class, req.authToken());
     }
 
     public void joinGame(JoinGameRequest req) throws ResponseException {
