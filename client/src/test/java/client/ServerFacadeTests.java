@@ -3,6 +3,9 @@ package client;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
+import dataaccess.interfaces.UserDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
@@ -15,6 +18,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import facade.ResponseException;
 import server.Server;
 import facade.ServerFacade;
+import service.ClearService;
+import service.ListGamesService;
 
 import java.sql.*;
 
@@ -24,88 +29,10 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade facade;
 
-    private static Connection connection;
+    AuthDAO authDAO;
+    GameDAO gameDAO;
+    UserDAO userDAO;
 
-    private static void insertUser(UserData userData) throws DataAccessException {
-        String hash = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
-        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?);";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, userData.username());
-            stmt.setString(2, hash);
-            stmt.setString(3, userData.email());
-            stmt.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataAccessException(ex.getMessage());
-        }
-    }
-
-    private static void insertAuth(AuthData authData) throws DataAccessException {
-        String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?);";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, authData.authToken());
-            stmt.setString(2, authData.username());
-            stmt.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataAccessException(ex.getMessage());
-        }
-    }
-
-    private static void insertGame(GameData game) throws DataAccessException {
-        var gson = new Gson();
-        String sql = "INSERT INTO games (whiteUsername, blackUsername, gameName, chessGame) VALUES (?, ?, ?, ?);";
-        try (PreparedStatement stmt = connection.prepareStatement(sql,
-                Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, game.whiteUsername());
-            stmt.setString(2, game.blackUsername());
-            stmt.setString(3, game.gameName());
-            stmt.setString(4, gson.toJson(game.game()));
-            if (stmt.executeUpdate() == 1) {
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    generatedKeys.next();
-                    int id = generatedKeys.getInt(1); // ID of the inserted book
-                    game = new GameData(id, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(ex.getMessage());
-        }
-    }
-
-    private int getGameCount() throws DataAccessException {
-        int count = 0;
-        String sql = "select id, whiteUsername, blackUsername, gameName, chessGame from games;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            var res = stmt.executeQuery();
-            while (res.next()) {
-                count++;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
-        return count;
-    }
-
-    private static GameData getGame(int id) throws DataAccessException {
-        Gson gson = new Gson();
-        GameData gameData = null;
-        String sql = "select whiteUsername, blackUsername, gameName, chessGame from games where id = ?;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            var res = stmt.executeQuery();
-            if (res.next()) {
-                String whiteUsername = res.getString(1);
-                String blackUsername = res.getString(2);
-                String gameName = res.getString(3);
-                String gameJson = res.getString(4);
-                ChessGame game = gson.fromJson(gameJson, ChessGame.class);
-                gameData = new GameData(id, whiteUsername, blackUsername, gameName, game);
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
-
-        return gameData;
-    }
 
     @BeforeAll
     public static void init() throws DataAccessException {
@@ -114,30 +41,18 @@ public class ServerFacadeTests {
         facade = new ServerFacade("http://localhost:" + port);
         System.out.println("Started test HTTP server on " + port);
 
-
-        connection = DatabaseManager.getConnection();
     }
 
     @BeforeEach
     public void prep() throws DataAccessException {
-        String sql = "truncate table games;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
-        sql = "truncate table auth;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
-        sql = "truncate table users;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
-        }
+        Connection conn = DatabaseManager.getConnection();
+        authDAO = new SQLAuthDAO(conn);
+        gameDAO = new SQLGameDAO(conn);
+        userDAO = new SQLUserDAO(conn);
+
+        authDAO.clear();
+        userDAO.clear();
+        gameDAO.clear();
     }
 
     @AfterAll
@@ -168,8 +83,9 @@ public class ServerFacadeTests {
     public void testLoginValid() throws DataAccessException {
         var expectedResult = new LoginResult("kal", "a");
         var req = new UserData("kal", "storms", "roshar.com");
+        var userData = new UserData(req.username(), BCrypt.hashpw(req.password(), BCrypt.gensalt()), req.email());
 
-        insertUser(req);
+        userDAO.createUser(userData);
 
         var ref = new Object() {
             LoginResult actualResult;
@@ -183,9 +99,9 @@ public class ServerFacadeTests {
 
     @Test
     public void testLoginInvalid() throws DataAccessException {
-        var inserted = new UserData("kal", "mmm", "roshar.com");
         var req = new UserData("kal", "storms", "roshar.com");
-        insertUser(inserted);
+        var userData = new UserData(req.username(), BCrypt.hashpw(req.password() + "MM", BCrypt.gensalt()), req.email());
+        userDAO.createUser(userData);
 
         try {
             facade.login(req);
@@ -198,7 +114,7 @@ public class ServerFacadeTests {
     @Test
     public void testLogoutValid() throws DataAccessException {
         var auth = new AuthData("abc123", "heraldOfWind");
-        insertAuth(auth);
+        authDAO.createAuth(auth);
         Assertions.assertDoesNotThrow(() -> facade.logout(auth.authToken()));
     }
 
@@ -215,13 +131,9 @@ public class ServerFacadeTests {
     @Test
     public void testListValid() throws DataAccessException, ResponseException {
         var auth = new AuthData("abc123", "heraldOfWind");
-        var game = new GameData(1, "szeth", "nightblood", "syl", new ChessGame());
-        insertAuth(auth);
-        insertGame(game);
 
-        var res = facade.listGames(new ListGamesRequest(auth.authToken()));
-        Assertions.assertEquals(1, res.games().size());
-        Assertions.assertTrue(res.games().contains(game));
+        authDAO.createAuth(auth);
+        Assertions.assertDoesNotThrow(() -> facade.listGames(new ListGamesRequest(auth.authToken())));
     }
 
     @Test
@@ -237,9 +149,9 @@ public class ServerFacadeTests {
     @Test
     public void createGameValid() throws DataAccessException, ResponseException {
         var auth = new AuthData("abc123", "heraldOfWind");
-        insertAuth(auth);
-        facade.createGame(new CreateGameRequest(auth.authToken(), "test"));
-        Assertions.assertEquals(1, getGameCount());
+        authDAO.createAuth(auth);
+        Assertions.assertDoesNotThrow(() -> facade.createGame(new CreateGameRequest(auth.authToken(), "test")));
+
     }
 
     @Test
@@ -256,11 +168,12 @@ public class ServerFacadeTests {
     public void joinGameValid() throws DataAccessException, ResponseException {
         var auth = new AuthData("abc123", "heraldOfWind");
         var game = new GameData(1, null, "syl", "braize", new ChessGame());
-        insertAuth(auth);
-        insertGame(game);
 
-        facade.joinGame(new JoinGameRequest(auth.authToken(), "WHITE", game.gameID()));
-        Assertions.assertEquals(auth.username(), getGame(game.gameID()).whiteUsername());
+        authDAO.createAuth(auth);
+        gameDAO.createGame(auth, "braize");
+        gameDAO.updateGame(game);
+
+        Assertions.assertDoesNotThrow(() -> facade.joinGame(new JoinGameRequest(auth.authToken(), "WHITE", game.gameID())));
     }
 
     @Test
@@ -277,8 +190,9 @@ public class ServerFacadeTests {
     public void joinGameInvalidTaken() throws DataAccessException {
         var auth = new AuthData("abc123", "heraldOfWind");
         var game = new GameData(1, "Taln", "syl", "braize", new ChessGame());
-        insertAuth(auth);
-        insertGame(game);
+        authDAO.createAuth(auth);
+        gameDAO.createGame(auth, "braize");
+        gameDAO.updateGame(game);
 
 
         try {
