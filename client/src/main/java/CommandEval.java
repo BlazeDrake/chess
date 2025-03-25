@@ -16,9 +16,10 @@ public class CommandEval {
     private static final String WHITE_COLS = EscapeSequences.ROW_COL_FORMAT + "    a   b   c  d   e  f   g  h     " + EscapeSequences.RESET_BG_COLOR;
     private static final String BLACK_COLS = EscapeSequences.ROW_COL_FORMAT + "    h   g   f  e   d  c   b  a     " + EscapeSequences.RESET_BG_COLOR;
     private ServerFacade facade;
-    private boolean loggedIn;
+    private State curState;
     private String username;
     private String authToken;
+    private ChessGame.TeamColor curColor;
     private ArrayList<Integer> gameIDList;
 
     public CommandEval(ServerFacade facade) {
@@ -29,7 +30,7 @@ public class CommandEval {
     public void run() {
         var scanner = new Scanner(System.in);
         String input;
-        loggedIn = false;
+        curState = State.LoggedOut;
         username = LOGGED_OUT_STRING;
         System.out.println("Welcome to Chess client!");
         do {
@@ -37,17 +38,23 @@ public class CommandEval {
                     "[" + username + "]: ");
             input = scanner.nextLine();
             try {
-                if (loggedIn) {
-                    System.out.println(EscapeSequences.SET_TEXT_BOLD_AND_BLUE + loggedInCommand(input));
-                }
-                else {
-                    System.out.println(EscapeSequences.SET_TEXT_BOLD_AND_BLUE + loggedOutCommand(input));
-                }
+                String command = EscapeSequences.SET_TEXT_BOLD_AND_BLUE;
+
+                command += switch (curState) {
+                    case LoggedOut:
+                        yield loggedOutCommand(input);
+                    case LoggedIn:
+                        yield loggedInCommand(input);
+                    case Gameplay:
+                        yield gameplayCommand(input);
+                };
+
+                System.out.println(command);
             } catch (ResponseException ex) {
                 handleError(ex);
             }
         }
-        while (loggedIn || !"quit".equals(input));
+        while (curState != State.LoggedOut || !"quit".equals(input));
     }
 
     private String loggedOutCommand(String input) throws ResponseException {
@@ -75,7 +82,7 @@ public class CommandEval {
             case "login" -> {
                 checkCount(args.length, 3);
                 var result = facade.login(new UserData(args[1], args[2], null));
-                loggedIn = true;
+                curState = State.LoggedIn;
                 username = result.username();
                 authToken = result.authToken();
                 yield "Logged in successfully. Welcome " + result.username();
@@ -132,35 +139,74 @@ public class CommandEval {
             case "join" -> {
                 checkCount(args.length, 3);
                 var colorStr = args[2].toUpperCase();
-                ChessGame.TeamColor color;
 
                 int id = getGameId(args[1]);
 
                 if (colorStr.equals("WHITE")) {
-                    color = ChessGame.TeamColor.WHITE;
+                    curColor = ChessGame.TeamColor.WHITE;
                 }
                 else if (colorStr.equals("BLACK")) {
-                    color = ChessGame.TeamColor.BLACK;
+                    curColor = ChessGame.TeamColor.BLACK;
                 }
                 else {
                     throw new ResponseException(400, "Invalid team color. Must be WHITE or BLACK");
                 }
+                curState = State.Gameplay;
                 facade.joinGame(new JoinGameRequest(authToken, colorStr, id));
-                yield drawBoard(new ChessGame(), color);
+                yield "now playing as " + colorStr + " in game " + id;
             }
             case "observe" -> {
                 checkCount(args.length, 2);
 
                 int id = getGameId(args[1]);
-                yield drawBoard(new ChessGame(), ChessGame.TeamColor.WHITE);
+
+                
+                curColor = ChessGame.TeamColor.WHITE;
+                curState = State.Gameplay;
+                yield "Now observing game " + id;
             }
             case "logout" -> {
                 facade.logout(authToken);
                 username = LOGGED_OUT_STRING;
                 authToken = "";
-                loggedIn = false;
+                curState = State.LoggedOut;
                 yield "Logged out successfully. Goodbye";
             }
+            case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");
+            default ->
+                    throw new ResponseException(400, "Error: Unknown Command " + input + ". Use help to see a list of commands");
+        };
+    }
+
+    private String gameplayCommand(String input) throws ResponseException {
+        String[] args = input.split(" ");
+        var returnVal = drawBoard(new ChessGame(), curColor);
+        return returnVal + switch (args[0]) {
+            case "help" -> "Gameplay commands: \n" +
+                    commandInfo("help",
+                            "Displays this dialog",
+                            "help") +
+                    commandInfo("redraw",
+                            "Redraws the chess board",
+                            "redraw") +
+                    commandInfo("leave",
+                            "Leaves the current game that's being played or observed",
+                            "leave") +
+                    commandInfo("move",
+                            "Moves one of your pieces if it is your turn. Promotion is only used if the piece is a pawn and moves to the end of the board.",
+                            "move <start column> <start row> <end column> <end row> <promotion: KNIGHT|BISHOP|ROOK|QUEEN>") +
+                    commandInfo("resign",
+                            "Forfeits the current game. Does not exit it.",
+                            "resign") +
+                    commandInfo("highlight",
+                            "Highlights all legal moves for one of your pieces",
+                            "highlight <column> <row>");
+            case "redraw" -> "IMPLEMENT ME";
+            case "leave" -> "IMPLEMENT ME";
+            case "move" -> "IMPLEMENT ME";
+            case "resign" -> "IMPLEMENT ME";
+            case "highlight" -> "IMPLEMENT ME";
+            case "logout" -> throw new ResponseException(400, "Error: Must leave game out before logging out");
             case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");
             default ->
                     throw new ResponseException(400, "Error: Unknown Command " + input + ". Use help to see a list of commands");
@@ -299,5 +345,12 @@ public class CommandEval {
             default -> "Internal error";
         };
         System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + msg);
+    }
+
+
+    private enum State {
+        LoggedOut,
+        LoggedIn,
+        Gameplay
     }
 }
