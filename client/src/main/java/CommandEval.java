@@ -9,6 +9,7 @@ import facade.ServerFacade;
 import ui.EscapeSequences;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class CommandEval {
@@ -197,7 +198,7 @@ public class CommandEval {
                             "leave") +
                     commandInfo("move",
                             "Moves one of your pieces if it is your turn. Promotion is only used if the piece is a pawn and moves to the end of the board.",
-                            "move <start column> <start row> <end column> <end row> <promotion: KNIGHT|BISHOP|ROOK|QUEEN>") +
+                            "move <start column> <start row> <end column> <end row> [promotion: KNIGHT|BISHOP|ROOK|QUEEN]") +
                     commandInfo("resign",
                             "Forfeits the current game. Does not exit it.",
                             "resign") +
@@ -214,7 +215,32 @@ public class CommandEval {
                 curState = State.LoggedIn;
                 yield "Successfully left game";
             }
-            case "move" -> "IMPLEMENT ME";
+            case "move" -> {
+                ChessPiece.PieceType promotion = null;
+                checkCount(args.length, 5, 6);
+                if (curColor != curGame.getTeamTurn()) {
+                    throw new ResponseException(400, "Error: It is not your turn");
+                }
+                if (args.length == 6) {
+                    var pieceStr = args[5].toLowerCase(Locale.ROOT);
+                    promotion = switch (pieceStr) {
+                        case "knight" -> ChessPiece.PieceType.KNIGHT;
+                        case "rook" -> ChessPiece.PieceType.ROOK;
+                        case "bishop" -> ChessPiece.PieceType.BISHOP;
+                        case "queen" -> ChessPiece.PieceType.QUEEN;
+                        default ->
+                                throw new ResponseException(400, "Error: Invalid promotion piece type; must be knight, rook, bishop, or queen");
+                    };
+                }
+                var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
+                var endPos = new ChessPosition(Integer.parseInt(args[4]), colToInt(args[3]));
+                try {
+                    curGame.makeMove(new ChessMove(startPos, endPos, null));
+                } catch (InvalidMoveException ex) {
+                    throw new ResponseException(400, ex.getMessage());
+                }
+                yield drawBoard(curGame, curColor);
+            }
             case "resign" -> "IMPLEMENT ME";
             case "highlight" -> "IMPLEMENT ME";
             case "logout" -> throw new ResponseException(400, "Error: Must leave game out before logging out");
@@ -269,10 +295,30 @@ public class CommandEval {
         }
     }
 
+    private static void checkCount(int length, int first, int second) throws ResponseException {
+        if (length != first && length != second) {
+            throw new ResponseException(400, "Error: Incorrect number of arguments; expected " + (first - 1) + (" or " + (second - 1)));
+        }
+    }
+
     private String commandInfo(String name, String info, String format) {
         return EscapeSequences.SET_TEXT_BOLD_AND_BLUE + name + "\n" +
                 "   " + EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + info + "\n" +
                 "   format: " + EscapeSequences.SET_TEXT_COLOR_GREEN + format + "\n";
+    }
+
+    private int colToInt(String col) throws ResponseException {
+        return switch (col.toLowerCase(Locale.ROOT)) {
+            case "a" -> 1;
+            case "b" -> 2;
+            case "c" -> 3;
+            case "d" -> 4;
+            case "e" -> 5;
+            case "f" -> 6;
+            case "g" -> 7;
+            case "h" -> 8;
+            default -> throw new ResponseException(400, "Error: Invalid column. Must be from a to h");
+        };
     }
 
     private void updateBoard() {
