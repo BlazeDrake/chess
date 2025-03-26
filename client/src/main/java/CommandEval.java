@@ -20,6 +20,8 @@ public class CommandEval {
     private String username;
     private String authToken;
     private ChessGame.TeamColor curColor;
+    private ChessGame curGame;
+    private int curId;
     private ArrayList<Integer> gameIDList;
 
     public CommandEval(ServerFacade facade) {
@@ -140,7 +142,7 @@ public class CommandEval {
                 checkCount(args.length, 3);
                 var colorStr = args[2].toUpperCase();
 
-                int id = getGameId(args[1]);
+                curId = getGameId(args[1]);
 
                 if (colorStr.equals("WHITE")) {
                     curColor = ChessGame.TeamColor.WHITE;
@@ -152,18 +154,20 @@ public class CommandEval {
                     throw new ResponseException(400, "Invalid team color. Must be WHITE or BLACK");
                 }
                 curState = State.Gameplay;
-                facade.joinGame(new JoinGameRequest(authToken, colorStr, id));
-                yield "now playing as " + colorStr + " in game " + id;
+                facade.joinGame(new JoinGameRequest(authToken, colorStr, curId));
+                updateBoard();
+                yield "now playing as " + colorStr + " in game " + curId + drawBoard(curGame, curColor);
             }
             case "observe" -> {
                 checkCount(args.length, 2);
 
-                int id = getGameId(args[1]);
+                curId = getGameId(args[1]);
 
-                
+
                 curColor = ChessGame.TeamColor.WHITE;
                 curState = State.Gameplay;
-                yield "Now observing game " + id;
+                updateBoard();
+                yield "Now observing game " + curId + drawBoard(curGame, curColor);
             }
             case "logout" -> {
                 facade.logout(authToken);
@@ -180,8 +184,7 @@ public class CommandEval {
 
     private String gameplayCommand(String input) throws ResponseException {
         String[] args = input.split(" ");
-        var returnVal = drawBoard(new ChessGame(), curColor);
-        return returnVal + switch (args[0]) {
+        return switch (args[0]) {
             case "help" -> "Gameplay commands: \n" +
                     commandInfo("help",
                             "Displays this dialog",
@@ -201,8 +204,16 @@ public class CommandEval {
                     commandInfo("highlight",
                             "Highlights all legal moves for one of your pieces",
                             "highlight <column> <row>");
-            case "redraw" -> "IMPLEMENT ME";
-            case "leave" -> "IMPLEMENT ME";
+            case "redraw" -> {
+                updateBoard();
+                yield drawBoard(curGame, curColor);
+            }
+            case "leave" -> {
+                String colorStr = curColor.name();
+                //Websocket stuff, update database from websocket
+                curState = State.LoggedIn;
+                yield "Successfully left game";
+            }
             case "move" -> "IMPLEMENT ME";
             case "resign" -> "IMPLEMENT ME";
             case "highlight" -> "IMPLEMENT ME";
@@ -262,6 +273,11 @@ public class CommandEval {
         return EscapeSequences.SET_TEXT_BOLD_AND_BLUE + name + "\n" +
                 "   " + EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + info + "\n" +
                 "   format: " + EscapeSequences.SET_TEXT_COLOR_GREEN + format + "\n";
+    }
+
+    private void updateBoard() {
+        //update curGame;
+        curGame = new ChessGame();
     }
 
     private String drawBoard(ChessGame game, ChessGame.TeamColor playerColor) {
