@@ -154,10 +154,10 @@ public class CommandEval {
                 else {
                     throw new ResponseException(400, "Invalid team color. Must be WHITE or BLACK");
                 }
-                curState = State.Gameplay;
                 facade.joinGame(new JoinGameRequest(authToken, colorStr, curId));
+                curState = State.Gameplay;
                 updateBoard();
-                yield "now playing as " + colorStr + " in game " + curId + drawBoard(curGame, curColor);
+                yield "now playing as " + colorStr + " in game " + curId + drawBoard(curGame, curColor, null);
             }
             case "observe" -> {
                 checkCount(args.length, 2);
@@ -168,7 +168,7 @@ public class CommandEval {
                 curColor = ChessGame.TeamColor.WHITE;
                 curState = State.Gameplay;
                 updateBoard();
-                yield "Now observing game " + curId + drawBoard(curGame, curColor);
+                yield "Now observing game " + curId + drawBoard(curGame, curColor, null);
             }
             case "logout" -> {
                 facade.logout(authToken);
@@ -207,7 +207,7 @@ public class CommandEval {
                             "highlight <column> <row>");
             case "redraw" -> {
                 updateBoard();
-                yield drawBoard(curGame, curColor);
+                yield drawBoard(curGame, curColor, null);
             }
             case "leave" -> {
                 String colorStr = curColor.name();
@@ -239,10 +239,23 @@ public class CommandEval {
                 } catch (InvalidMoveException ex) {
                     throw new ResponseException(400, ex.getMessage());
                 }
-                yield drawBoard(curGame, curColor);
+                yield drawBoard(curGame, curColor, null);
             }
             case "resign" -> "IMPLEMENT ME";
-            case "highlight" -> "IMPLEMENT ME";
+            case "highlight" -> {
+                checkCount(args.length, 3);
+                boolean[][] highlightedPos = new boolean[8][8];
+                var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
+                var validMoves = curGame.validMoves(startPos);
+                if (validMoves != null) {
+                    for (var move : validMoves) {
+                        var pos = move.getEndPosition();
+                        highlightedPos[pos.getRow() - 1][pos.getColumn() - 1] = true;
+                    }
+                }
+
+                yield drawBoard(curGame, curColor, highlightedPos);
+            }
             case "logout" -> throw new ResponseException(400, "Error: Must leave game out before logging out");
             case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");
             default ->
@@ -326,16 +339,17 @@ public class CommandEval {
         curGame = new ChessGame();
     }
 
-    private String drawBoard(ChessGame game, ChessGame.TeamColor playerColor) {
+    private String drawBoard(ChessGame game, ChessGame.TeamColor playerColor, boolean[][] highlightedPos) {
         var board = game.getBoard();
         StringBuilder builder = new StringBuilder();
+        boolean highlight = highlightedPos != null;
         //Print column letters
         if (playerColor == ChessGame.TeamColor.BLACK) {
             //black perspective
             builder.append(BLACK_COLS);
             builder.append("\n");
             for (int i = 1; i <= 8; i++) {
-                printRow(board, i, builder, -1, 9);
+                printRow(board, i, builder, -1, 9, highlight ? highlightedPos[i - 1] : null);
             }
             builder.append(BLACK_COLS);
 
@@ -345,7 +359,7 @@ public class CommandEval {
             builder.append(WHITE_COLS);
             builder.append("\n");
             for (int i = 8; i >= 1; i--) {
-                printRow(board, i, builder, 1, 0);
+                printRow(board, i, builder, 1, 0, highlight ? highlightedPos[i - 1] : null);
             }
             builder.append(WHITE_COLS);
         }
@@ -353,20 +367,29 @@ public class CommandEval {
         return builder.toString();
     }
 
-    private void printRow(ChessBoard board, int i, StringBuilder builder, int jMult, int jOffset) {
+    private void printRow(ChessBoard board, int row, StringBuilder builder, int jMult, int jOffset, boolean[] highlighted) {
         builder.append(EscapeSequences.ROW_COL_FORMAT);
         builder.append(" ");
-        builder.append(i);
+        builder.append(row);
         builder.append(" ");
         builder.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
         for (int j = 1; j <= 8; j++) {
-            builder.append((i + j) % 2 == 0 ? EscapeSequences.SET_BG_COLOR_BROWN : EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
-            var piece = board.getPiece(new ChessPosition(i, jOffset + (jMult * j)));
+            boolean isDarkSquare = (row + j) % 2 == 0;
+            int col = jOffset + (jMult * j);
+            if (highlighted != null && highlighted[col - 1]) {
+                //green is highlighted
+                builder.append(isDarkSquare ? EscapeSequences.SET_BG_COLOR_DARK_GREEN : EscapeSequences.SET_BG_COLOR_LIGHTER_GREEN);
+            }
+            else {
+                //normal color
+                builder.append(isDarkSquare ? EscapeSequences.SET_BG_COLOR_BROWN : EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
+            }
+            var piece = board.getPiece(new ChessPosition(row, col));
             builder.append(printPiece(piece));
         }
         builder.append(EscapeSequences.ROW_COL_FORMAT);
         builder.append(" ");
-        builder.append(i);
+        builder.append(row);
         builder.append(" ");
         builder.append(EscapeSequences.RESET_BG_COLOR);
         builder.append("\n");
