@@ -10,11 +10,13 @@ import java.util.Objects;
  */
 public class ChessPosition {
 
+    private static int colStart = 96;
     private final int row;
     private final int col;
+
     public ChessPosition(int row, int col) {
-        this.row=row;
-        this.col=col;
+        this.row = row;
+        this.col = col;
     }
 
     /**
@@ -51,7 +53,7 @@ public class ChessPosition {
     }
 
     @Override
-    public String toString(){
-        return "("+col+", "+row+")";
+    public String toString() {
+        return "(" + (char) (colStart + col) + ", " + row + ")";
     }
 }
