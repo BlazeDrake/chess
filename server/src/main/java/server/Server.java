@@ -7,6 +7,7 @@ import dataaccess.interfaces.UserDAO;
 import handler.*;
 import com.google.gson.Gson;
 import network.ErrorResponse;
+import server.websocket.WebSocketHandler;
 import spark.*;
 
 import java.sql.Connection;
@@ -17,6 +18,8 @@ public class Server {
     private static interface RequestPredicate {
         String handle(Request req, Response res) throws DataAccessException;
     }
+
+    private final WebSocketHandler webSocketHandler;
 
     private ClearHandler clearHandler;
     private RegisterHandler registerHandler;
@@ -48,6 +51,8 @@ public class Server {
             throw new RuntimeException(e);
         }
 
+        webSocketHandler = new WebSocketHandler();
+
 
         clearHandler = new ClearHandler(authDAO, userDAO, gameDAO);
         registerHandler = new RegisterHandler(userDAO, authDAO);
@@ -66,6 +71,8 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/ws", webSocketHandler);
 
         // Register your endpoints and handle exceptions here.
         registerEndpoints();

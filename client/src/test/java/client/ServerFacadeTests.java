@@ -1,7 +1,6 @@
 package client;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import dataaccess.*;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
@@ -15,11 +14,9 @@ import network.requests.ListGamesRequest;
 import network.results.LoginResult;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
-import facade.ResponseException;
+import network.ResponseException;
 import server.Server;
 import facade.ServerFacade;
-import service.ClearService;
-import service.ListGamesService;
 
 import java.sql.*;
 

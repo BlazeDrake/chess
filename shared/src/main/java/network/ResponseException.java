@@ -1,4 +1,4 @@
-package facade;
+package network;
 
 import com.google.gson.Gson;
 

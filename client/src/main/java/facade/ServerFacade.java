@@ -1,6 +1,7 @@
 package facade;
 
 import com.google.gson.Gson;
+import network.ResponseException;
 import network.datamodels.UserData;
 import network.requests.*;
 import network.results.*;

@@ -4,7 +4,7 @@ import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
 import network.requests.JoinGameRequest;
 import network.requests.ListGamesRequest;
-import facade.ResponseException;
+import network.ResponseException;
 import facade.ServerFacade;
 import ui.EscapeSequences;
 
