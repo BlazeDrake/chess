@@ -18,6 +18,10 @@ public class ServerFacade {
         serverUrl = url;
     }
 
+    public String getUrl() {
+        return serverUrl;
+    }
+
 
     public void register(UserData req) throws ResponseException {
         makeRequest("POST", "/user", req, RegisterResult.class, null);

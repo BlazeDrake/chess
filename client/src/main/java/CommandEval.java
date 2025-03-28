@@ -1,4 +1,6 @@
 import chess.*;
+import facade.websocket.NotificationHandler;
+import facade.websocket.WebSocketFacade;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
 import network.requests.CreateGameRequest;
@@ -25,8 +27,13 @@ public class CommandEval {
     private int curId;
     private ArrayList<Integer> gameIDList;
 
-    public CommandEval(ServerFacade facade) {
+    private NotificationHandler notificationHandler;
+
+    private WebSocketFacade ws;
+
+    public CommandEval(ServerFacade facade, NotificationHandler notificationHandler) {
         this.facade = facade;
+        this.notificationHandler = notificationHandler;
         gameIDList = new ArrayList<>();
     }
 
@@ -143,6 +150,8 @@ public class CommandEval {
                 checkCount(args.length, 3);
                 var colorStr = args[2].toUpperCase();
 
+                ws = new WebSocketFacade(facade.getUrl(), notificationHandler);
+
                 curId = getGameId(args[1]);
 
                 if (colorStr.equals("WHITE")) {
@@ -155,6 +164,7 @@ public class CommandEval {
                     throw new ResponseException(400, "Invalid team color. Must be WHITE or BLACK");
                 }
                 facade.joinGame(new JoinGameRequest(authToken, colorStr, curId));
+                ws.joinGame(username, curId, curColor);
                 curState = State.Gameplay;
                 updateBoard();
                 yield "now playing as " + colorStr + " in game " + curId + drawBoard(curGame, curColor, null);
@@ -216,6 +226,7 @@ public class CommandEval {
                 yield "Successfully left game";
             }
             case "move" -> {
+                //FIXME: Make it so it doesn't work for observers with websocket!
                 ChessPiece.PieceType promotion = null;
                 checkCount(args.length, 5, 6);
                 if (curColor != curGame.getTeamTurn()) {
