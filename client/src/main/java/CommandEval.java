@@ -164,7 +164,7 @@ public class CommandEval {
                     throw new ResponseException(400, "Invalid team color. Must be WHITE or BLACK");
                 }
                 facade.joinGame(new JoinGameRequest(authToken, colorStr, curId));
-                ws.joinGame(username, curId, curColor);
+                ws.joinGame(authToken, curId);
                 curState = State.Gameplay;
                 updateBoard();
                 yield "now playing as " + colorStr + " in game " + curId + drawBoard(curGame, curColor, null);

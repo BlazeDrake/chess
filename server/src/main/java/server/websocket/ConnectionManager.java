@@ -1,5 +1,6 @@
 package server.websocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
@@ -9,6 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+
+    private Gson gson;
+
+    public ConnectionManager() {
+        gson = new Gson();
+    }
 
     public void add(String username, int gameId, Session session) {
         var connection = new Connection(username, gameId, session);
@@ -24,7 +31,7 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (c.gameId == gameId && !c.username.equals(excludeUsername)) {
-                    c.send(notification.toString());
+                    c.send(gson.toJson(notification));
                 }
             }
             else {

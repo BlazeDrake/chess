@@ -1,7 +1,5 @@
 package websocket.messages;
 
-import chess.ChessMove;
-
 import java.util.Objects;
 
 /**
@@ -11,14 +9,14 @@ import java.util.Objects;
  * methods.
  */
 public class ClientMessage {
-    ClientMessageType clientMessageType;
-    private String username;
-    private String jsonData;
+    ClientMessageType commandType;
+    private String authToken;
+    private int gameId;
 
     public enum ClientMessageType {
         CONNECT,
         MAKE_MOVE,
-        LEAVE
+        LEAVE;
     }
 
     @Override
@@ -30,29 +28,29 @@ public class ClientMessage {
             return false;
         }
         ClientMessage that = (ClientMessage) o;
-        return clientMessageType == that.clientMessageType && Objects.equals(username, that.username) && Objects.equals(jsonData, that.jsonData);
+        return commandType == that.commandType && Objects.equals(authToken, that.authToken) && Objects.equals(gameId, that.gameId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(clientMessageType, username, jsonData);
+        return Objects.hash(commandType, authToken, gameId);
     }
 
-    public ClientMessage(ClientMessageType type, String username, String jsonData) {
-        this.clientMessageType = type;
-        this.username = username;
-        this.jsonData = jsonData;
+    public ClientMessage(ClientMessageType type, String authToken, int gameId) {
+        this.commandType = type;
+        this.authToken = authToken;
+        this.gameId = gameId;
     }
 
-    public ClientMessageType getClientMessageType() {
-        return this.clientMessageType;
+    public ClientMessageType getCommandType() {
+        return this.commandType;
     }
 
-    public String getUsername() {
-        return this.username;
+    public String getAuthToken() {
+        return this.authToken;
     }
 
-    public String getJsonData() {
-        return this.jsonData;
+    public int getGameId() {
+        return this.gameId;
     }
 }

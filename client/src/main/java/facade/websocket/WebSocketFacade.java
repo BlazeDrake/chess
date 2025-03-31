@@ -4,7 +4,6 @@ package facade.websocket;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import network.ResponseException;
-import network.websocket.ConnectInfo;
 import websocket.messages.ClientMessage;
 import websocket.messages.ServerMessage;
 
@@ -49,16 +48,9 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinGame(String username, int id, ChessGame.TeamColor color) throws ResponseException {
+    public void joinGame(String auth, int id) throws ResponseException {
         try {
-            ConnectInfo connectInfo;
-            if (color == null) {
-                connectInfo = new ConnectInfo(id, true, null);
-            }
-            else {
-                connectInfo = new ConnectInfo(id, false, color);
-            }
-            var msg = new ClientMessage(ClientMessage.ClientMessageType.CONNECT, username, gson.toJson(connectInfo));
+            var msg = new ClientMessage(ClientMessage.ClientMessageType.CONNECT, auth, id);
             this.session.getBasicRemote().sendText(gson.toJson(msg));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
