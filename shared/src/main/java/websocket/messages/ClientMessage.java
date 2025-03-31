@@ -16,7 +16,8 @@ public class ClientMessage {
     public enum ClientMessageType {
         CONNECT,
         MAKE_MOVE,
-        LEAVE;
+        RESIGN,
+        LEAVE
     }
 
     @Override

@@ -222,6 +222,7 @@ public class CommandEval {
             case "leave" -> {
                 String colorStr = curColor.name();
                 //Websocket stuff, update database from websocket
+                ws.leaveGame(authToken, curId);
                 curState = State.LoggedIn;
                 yield "Successfully left game";
             }

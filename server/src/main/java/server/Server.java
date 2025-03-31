@@ -51,7 +51,7 @@ public class Server {
             throw new RuntimeException(e);
         }
 
-        webSocketHandler = new WebSocketHandler(authDAO);
+        webSocketHandler = new WebSocketHandler(authDAO, gameDAO);
 
 
         clearHandler = new ClearHandler(authDAO, userDAO, gameDAO);
