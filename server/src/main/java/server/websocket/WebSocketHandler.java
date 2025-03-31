@@ -46,6 +46,6 @@ public class WebSocketHandler {
         connections.add(username, id, session);
         var message = String.format("%s connected", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast("null"/*username*/, id, notification);
+        connections.broadcast(username, id, notification);
     }
 }

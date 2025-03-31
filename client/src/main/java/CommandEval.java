@@ -167,7 +167,7 @@ public class CommandEval {
                 ws.joinGame(authToken, curId);
                 curState = State.Gameplay;
                 updateBoard();
-                yield "now playing as " + colorStr + " in game " + curId + drawBoard(curGame, curColor, null);
+                yield "now playing as " + colorStr + " in game " + curId + "\n" + drawBoard(curGame, curColor, null);
             }
             case "observe" -> {
                 checkCount(args.length, 2);
