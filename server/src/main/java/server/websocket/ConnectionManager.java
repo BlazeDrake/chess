@@ -6,6 +6,7 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -24,6 +25,16 @@ public class ConnectionManager {
 
     public void remove(String visitorName) {
         connections.remove(visitorName);
+    }
+
+    public List<String> getGameConnections(int id) {
+        var returnVal = new ArrayList<String>();
+        for (var c : connections.values()) {
+            if (c.gameId == id) {
+                returnVal.add(c.username);
+            }
+        }
+        return returnVal;
     }
 
     public void broadcast(String excludeUsername, int gameId, ServerMessage notification) throws IOException {

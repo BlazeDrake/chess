@@ -52,7 +52,7 @@ public class CommandEval {
                     case LoggedIn:
                         yield loggedInCommand(input);
                     case Gameplay:
-                        yield gameplayCommand(input);
+                        yield gameplayCommand(input, scanner);
                 };
 
                 printer.printResponse(command);
@@ -169,7 +169,8 @@ public class CommandEval {
                 checkCount(args.length, 2);
 
                 curId = getGameId(args[1]);
-
+                ws = new WebSocketFacade(facade.getUrl(), printer);
+                ws.joinGame(authToken, curId);
 
                 curColor = ChessGame.TeamColor.WHITE;
                 curState = State.Gameplay;
@@ -189,7 +190,7 @@ public class CommandEval {
         };
     }
 
-    private String gameplayCommand(String input) throws ResponseException {
+    private String gameplayCommand(String input, Scanner scanner) throws ResponseException {
         String[] args = input.split(" ");
         return switch (args[0]) {
             case "help" -> "Gameplay commands: \n" +
@@ -249,7 +250,17 @@ public class CommandEval {
                 }
                 yield drawBoard(curGame, curColor, null);
             }
-            case "resign" -> "IMPLEMENT ME";
+            case "resign" -> {
+                printer.printSubCommand("Are you sure? [y/n]");
+                String next = scanner.nextLine();
+                if ("y".equalsIgnoreCase(next)) {
+                    ws.resign(authToken, curId);
+                    yield "Successfully Resigned";
+                }
+                else {
+                    yield "Cancelled Resignation";
+                }
+            }
             case "highlight" -> {
                 checkCount(args.length, 3);
                 boolean[][] highlightedPos = new boolean[8][8];

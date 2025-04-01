@@ -6,6 +6,7 @@ import dataaccess.interfaces.GameDAO;
 import network.datamodels.AuthData;
 import network.datamodels.GameData;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,6 +96,17 @@ public class SQLGameDAO implements GameDAO {
             throw new DataAccessException("Error: Game with ID " + id + " doesn't exist");
         }
         return gameData;
+    }
+
+    public void deleteGame(int id) throws DataAccessException {
+
+        String sql = "delete from " + tableVal + " where id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     @Override

@@ -35,7 +35,10 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    printer.notify(notification);
+                    switch (notification.getServerMessageType()) {
+                        case NOTIFICATION -> printer.notify(notification);
+                        default -> printer.printError(notification.getMessage());
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -60,6 +63,15 @@ public class WebSocketFacade extends Endpoint {
     public void leaveGame(String auth, int id) throws ResponseException {
         try {
             var msg = new ClientMessage(ClientMessage.ClientMessageType.LEAVE, auth, id);
+            this.session.getBasicRemote().sendText(gson.toJson(msg));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void resign(String auth, int id) throws ResponseException {
+        try {
+            var msg = new ClientMessage(ClientMessage.ClientMessageType.RESIGN, auth, id);
             this.session.getBasicRemote().sendText(gson.toJson(msg));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

@@ -37,4 +37,9 @@ public class Printer {
         System.out.print(EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + EscapeSequences.SET_TEXT_BOLD +
                 "[" + username + "]: ");
     }
+
+    public void printSubCommand(String sub) {
+        System.out.print(EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + EscapeSequences.SET_TEXT_BOLD +
+                "\n" + sub + ": ");
+    }
 }

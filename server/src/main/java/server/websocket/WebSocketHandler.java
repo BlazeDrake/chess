@@ -68,12 +68,20 @@ public class WebSocketHandler {
             else if (username.equals(game.blackUsername())) {
                 games.updateGame(new GameData(id, game.whiteUsername(), null, game.gameName(), game.game()));
             }
+
+            if (connections.getGameConnections(id).isEmpty()) {
+                games.deleteGame(id);
+            }
         } catch (DataAccessException e) {
             throw new IOException(e);
         }
     }
 
     private void resign(String username, int id, Session session) throws IOException {
+        var message = String.format("%s resigned. No more moves may be done on this game", username);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(username, id, notification);
 
+        //set the game to not allow moves
     }
 }
