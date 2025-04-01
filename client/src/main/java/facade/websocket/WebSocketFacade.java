@@ -1,9 +1,9 @@
 package facade.websocket;
 
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import network.ResponseException;
+import ui.Printer;
 import websocket.messages.ClientMessage;
 import websocket.messages.ServerMessage;
 
@@ -16,16 +16,16 @@ import java.net.URISyntaxException;
 public class WebSocketFacade extends Endpoint {
 
     Session session;
-    NotificationHandler notificationHandler;
+    Printer printer;
     Gson gson;
 
-    public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
+    public WebSocketFacade(String url, Printer printer) throws ResponseException {
         try {
             gson = new Gson();
 
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
-            this.notificationHandler = notificationHandler;
+            this.printer = printer;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -35,7 +35,7 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(notification);
+                    printer.notify(notification);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {

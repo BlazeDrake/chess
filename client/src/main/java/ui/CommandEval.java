@@ -1,5 +1,6 @@
+package ui;
+
 import chess.*;
-import facade.websocket.NotificationHandler;
 import facade.websocket.WebSocketFacade;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
@@ -8,7 +9,6 @@ import network.requests.JoinGameRequest;
 import network.requests.ListGamesRequest;
 import network.ResponseException;
 import facade.ServerFacade;
-import ui.EscapeSequences;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -20,20 +20,19 @@ public class CommandEval {
     private static final String BLACK_COLS = EscapeSequences.ROW_COL_FORMAT + "    h   g   f  e   d  c   b  a     " + EscapeSequences.RESET_BG_COLOR;
     private ServerFacade facade;
     private State curState;
-    private String username;
     private String authToken;
     private ChessGame.TeamColor curColor;
     private ChessGame curGame;
     private int curId;
     private ArrayList<Integer> gameIDList;
 
-    private NotificationHandler notificationHandler;
+    private Printer printer;
 
     private WebSocketFacade ws;
 
-    public CommandEval(ServerFacade facade, NotificationHandler notificationHandler) {
+    public CommandEval(ServerFacade facade) {
         this.facade = facade;
-        this.notificationHandler = notificationHandler;
+        this.printer = new Printer();
         gameIDList = new ArrayList<>();
     }
 
@@ -41,16 +40,13 @@ public class CommandEval {
         var scanner = new Scanner(System.in);
         String input;
         curState = State.LoggedOut;
-        username = LOGGED_OUT_STRING;
-        System.out.println("Welcome to Chess client!");
+        printer.setUsername(LOGGED_OUT_STRING);
+        printer.printWelcome();
         do {
-            System.out.print(EscapeSequences.SET_TEXT_NORMAL_AND_WHITE + EscapeSequences.SET_TEXT_BOLD +
-                    "[" + username + "]: ");
+            printer.printName();
             input = scanner.nextLine();
             try {
-                String command = EscapeSequences.SET_TEXT_BOLD_AND_BLUE;
-
-                command += switch (curState) {
+                String command = switch (curState) {
                     case LoggedOut:
                         yield loggedOutCommand(input);
                     case LoggedIn:
@@ -59,7 +55,7 @@ public class CommandEval {
                         yield gameplayCommand(input);
                 };
 
-                System.out.println(command);
+                printer.printResponse(command);
             } catch (ResponseException ex) {
                 handleError(ex);
             }
@@ -93,7 +89,7 @@ public class CommandEval {
                 checkCount(args.length, 3);
                 var result = facade.login(new UserData(args[1], args[2], null));
                 curState = State.LoggedIn;
-                username = result.username();
+                printer.setUsername(result.username());
                 authToken = result.authToken();
                 yield "Logged in successfully. Welcome " + result.username();
             }
@@ -150,7 +146,7 @@ public class CommandEval {
                 checkCount(args.length, 3);
                 var colorStr = args[2].toUpperCase();
 
-                ws = new WebSocketFacade(facade.getUrl(), notificationHandler);
+                ws = new WebSocketFacade(facade.getUrl(), printer);
 
                 curId = getGameId(args[1]);
 
@@ -182,7 +178,7 @@ public class CommandEval {
             }
             case "logout" -> {
                 facade.logout(authToken);
-                username = LOGGED_OUT_STRING;
+                printer.setUsername(LOGGED_OUT_STRING);
                 authToken = "";
                 curState = State.LoggedOut;
                 yield "Logged out successfully. Goodbye";
@@ -441,7 +437,7 @@ public class CommandEval {
             case 403 -> "Error: already taken";
             default -> "Internal error";
         };
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + msg);
+        printer.printError(msg);
     }
 
 
