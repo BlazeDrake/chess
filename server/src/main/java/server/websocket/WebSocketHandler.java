@@ -11,7 +11,6 @@ import network.datamodels.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import server.Server;
 import websocket.messages.ClientMessage;
 import websocket.messages.ServerMessage;
 
@@ -44,11 +43,11 @@ public class WebSocketHandler {
         var type = msg.getCommandType();
         switch (type) {
             case ClientMessage.ClientMessageType.CONNECT ->
-                    join(username, msg.getAuthToken(), msg.getGameId(), session);
-            case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameId());
-            case ClientMessage.ClientMessageType.RESIGN -> resign(username, msg.getAuthToken(), msg.getGameId());
+                    join(username, msg.getAuthToken(), msg.getGameID(), session);
+            case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameID());
+            case ClientMessage.ClientMessageType.RESIGN -> resign(username, msg.getAuthToken(), msg.getGameID());
             case ClientMessage.ClientMessageType.MAKE_MOVE ->
-                    move(username, msg.getAuthToken(), msg.getGameId(), msg.getMove());
+                    move(username, msg.getAuthToken(), msg.getGameID(), msg.getMove());
         }
     }
 
@@ -68,6 +67,9 @@ public class WebSocketHandler {
         var message = String.format("%s connected", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(username, id, notification);
+
+        //var response = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Connected");
+        //session.getRemote().sendString(gson.toJson(response));
     }
 
     private void leave(String username, String authToken, int id) throws IOException {
