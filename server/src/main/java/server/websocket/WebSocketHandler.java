@@ -38,16 +38,21 @@ public class WebSocketHandler {
         try {
             username = auth.authenticate(msg.getAuthToken()).username();
         } catch (DataAccessException e) {
-            throw new IOException(e);
+            sendError(session);
+            return;
         }
         var type = msg.getCommandType();
-        switch (type) {
-            case ClientMessage.ClientMessageType.CONNECT ->
-                    join(username, msg.getAuthToken(), msg.getGameID(), session);
-            case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameID());
-            case ClientMessage.ClientMessageType.RESIGN -> resign(username, msg.getAuthToken(), msg.getGameID());
-            case ClientMessage.ClientMessageType.MAKE_MOVE ->
-                    move(username, msg.getAuthToken(), msg.getGameID(), msg.getMove());
+        try {
+            switch (type) {
+                case ClientMessage.ClientMessageType.CONNECT ->
+                        join(username, msg.getAuthToken(), msg.getGameID(), session);
+                case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameID());
+                case ClientMessage.ClientMessageType.RESIGN -> resign(username, msg.getAuthToken(), msg.getGameID());
+                case ClientMessage.ClientMessageType.MAKE_MOVE ->
+                        move(username, msg.getAuthToken(), msg.getGameID(), msg.getMove());
+            }
+        } catch (IOException e) {
+            sendError(session);
         }
     }
 
@@ -55,8 +60,7 @@ public class WebSocketHandler {
 
         try {
             var gameData = games.getGame(new AuthData(authToken, username), id);
-            var gameJson = gson.toJson(gameData.game());
-            var updateNotif = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameJson);
+            var updateNotif = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, gameData.game());
             session.getRemote().sendString(gson.toJson(updateNotif));
         } catch (DataAccessException e) {
             throw new IOException(e);
@@ -65,7 +69,7 @@ public class WebSocketHandler {
         //finish message
         connections.add(username, id, session);
         var message = String.format("%s connected", username);
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
         connections.broadcast(username, id, notification);
 
         //var response = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Connected");
@@ -75,7 +79,7 @@ public class WebSocketHandler {
     private void leave(String username, String authToken, int id) throws IOException {
         connections.remove(username);
         var message = String.format("%s disconnected", username);
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
         connections.broadcast(username, id, notification);
 
         //update db
@@ -113,7 +117,7 @@ public class WebSocketHandler {
             throw new IOException(e);
         }
         var message = String.format("%s resigned. No more moves may be done on this game", username);
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
         connections.broadcast(username, id, notification);
     }
 
@@ -131,8 +135,12 @@ public class WebSocketHandler {
 
     private void updateGame(int id, GameData updatedData, ChessGame chessGame) throws DataAccessException, IOException {
         games.updateGame(updatedData);
-        var gameJson = gson.toJson(chessGame);
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameJson);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, chessGame);
         connections.broadcast(null, id, notification);
+    }
+
+    private void sendError(Session session) throws IOException {
+        var err = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Internal error; try again", null);
+        session.getRemote().sendString(gson.toJson(err));
     }
 }
