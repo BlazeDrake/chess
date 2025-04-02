@@ -1,5 +1,7 @@
 package websocket.messages;
 
+import chess.ChessMove;
+
 import java.util.Objects;
 
 /**
@@ -12,6 +14,7 @@ public class ClientMessage {
     ClientMessageType commandType;
     private String authToken;
     private int gameId;
+    ChessMove move;
 
     public enum ClientMessageType {
         CONNECT,
@@ -41,6 +44,14 @@ public class ClientMessage {
         this.commandType = type;
         this.authToken = authToken;
         this.gameId = gameId;
+        this.move = null;
+    }
+
+    public ClientMessage(ClientMessageType type, String authToken, int gameId, ChessMove move) {
+        this.commandType = type;
+        this.authToken = authToken;
+        this.gameId = gameId;
+        this.move = move;
     }
 
     public ClientMessageType getCommandType() {
@@ -53,5 +64,9 @@ public class ClientMessage {
 
     public int getGameId() {
         return this.gameId;
+    }
+
+    public ChessMove getMove() {
+        return this.move;
     }
 }

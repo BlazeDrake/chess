@@ -1,8 +1,10 @@
 package facade.websocket;
 
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import network.ResponseException;
+import ui.CommandEval;
 import ui.Printer;
 import websocket.messages.ClientMessage;
 import websocket.messages.ServerMessage;
@@ -19,7 +21,7 @@ public class WebSocketFacade extends Endpoint {
     Printer printer;
     Gson gson;
 
-    public WebSocketFacade(String url, Printer printer) throws ResponseException {
+    public WebSocketFacade(String url, Printer printer, CommandEval eval) throws ResponseException {
         try {
             gson = new Gson();
 
@@ -36,7 +38,8 @@ public class WebSocketFacade extends Endpoint {
                 public void onMessage(String message) {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
                     switch (notification.getServerMessageType()) {
-                        case NOTIFICATION -> printer.notify(notification);
+                        case NOTIFICATION -> printer.notify(notification.getMessage());
+                        case LOAD_GAME -> eval.loadGame(notification.getMessage());
                         default -> printer.printError(notification.getMessage());
                     }
                 }
@@ -72,6 +75,15 @@ public class WebSocketFacade extends Endpoint {
     public void resign(String auth, int id) throws ResponseException {
         try {
             var msg = new ClientMessage(ClientMessage.ClientMessageType.RESIGN, auth, id);
+            this.session.getBasicRemote().sendText(gson.toJson(msg));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void move(String auth, int id, ChessMove move) throws ResponseException {
+        try {
+            var msg = new ClientMessage(ClientMessage.ClientMessageType.MAKE_MOVE, auth, id, move);
             this.session.getBasicRemote().sendText(gson.toJson(msg));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

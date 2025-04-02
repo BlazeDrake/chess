@@ -1,6 +1,7 @@
 package ui;
 
 import chess.*;
+import com.google.gson.Gson;
 import facade.websocket.WebSocketFacade;
 import network.datamodels.GameData;
 import network.datamodels.UserData;
@@ -146,7 +147,7 @@ public class CommandEval {
                 checkCount(args.length, 3);
                 var colorStr = args[2].toUpperCase();
 
-                ws = new WebSocketFacade(facade.getUrl(), printer);
+                ws = new WebSocketFacade(facade.getUrl(), printer, this);
 
                 curId = getGameId(args[1]);
 
@@ -162,20 +163,18 @@ public class CommandEval {
                 facade.joinGame(new JoinGameRequest(authToken, colorStr, curId));
                 ws.joinGame(authToken, curId);
                 curState = State.Gameplay;
-                updateBoard();
-                yield "now playing as " + colorStr + " in game " + curId + "\n" + drawBoard(curGame, curColor, null);
+                yield "now playing as " + colorStr + " in game " + curId;
             }
             case "observe" -> {
                 checkCount(args.length, 2);
 
                 curId = getGameId(args[1]);
-                ws = new WebSocketFacade(facade.getUrl(), printer);
+                ws = new WebSocketFacade(facade.getUrl(), printer, this);
                 ws.joinGame(authToken, curId);
 
                 curColor = ChessGame.TeamColor.WHITE;
                 curState = State.Gameplay;
-                updateBoard();
-                yield "Now observing game " + curId + drawBoard(curGame, curColor, null);
+                yield "Now observing game " + curId;
             }
             case "logout" -> {
                 facade.logout(authToken);
@@ -212,10 +211,7 @@ public class CommandEval {
                     commandInfo("highlight",
                             "Highlights all legal moves for one of your pieces",
                             "highlight <column> <row>");
-            case "redraw" -> {
-                updateBoard();
-                yield drawBoard(curGame, curColor, null);
-            }
+            case "redraw" -> drawBoard(curGame, curColor, null);
             case "leave" -> {
                 String colorStr = curColor.name();
                 //Websocket stuff, update database from websocket
@@ -244,7 +240,9 @@ public class CommandEval {
                 var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
                 var endPos = new ChessPosition(Integer.parseInt(args[4]), colToInt(args[3]));
                 try {
-                    curGame.makeMove(new ChessMove(startPos, endPos, null));
+                    var move = new ChessMove(startPos, endPos, promotion);
+                    curGame.makeMove(move);
+                    ws.move(authToken, curId, move);
                 } catch (InvalidMoveException ex) {
                     throw new ResponseException(400, ex.getMessage());
                 }
@@ -353,9 +351,9 @@ public class CommandEval {
         };
     }
 
-    private void updateBoard() {
-        //update curGame;
-        curGame = new ChessGame();
+    public void loadGame(String json) {
+        curGame = new Gson().fromJson(json, ChessGame.class);
+        printer.notify(drawBoard(curGame, curColor, null));
     }
 
     private String drawBoard(ChessGame game, ChessGame.TeamColor playerColor, boolean[][] highlightedPos) {
