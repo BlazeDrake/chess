@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
@@ -94,10 +95,24 @@ public class WebSocketHandler {
     }
 
     private void resign(String username, String authToken, int id) throws IOException {
+        //set the game to not allow moves
+        try {
+            var gameData = games.getGame(new AuthData(authToken, username), id);
+            var chessGame = gameData.game();
+            if (username.equals(gameData.whiteUsername())) {
+                chessGame.setCurState(ChessGame.GameState.BLACK_WIN);
+            }
+            else {
+                chessGame.setCurState(ChessGame.GameState.WHITE_WIN);
+            }
+            var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
+            updateGame(id, updatedData, chessGame);
+        } catch (DataAccessException e) {
+            throw new IOException(e);
+        }
         var message = String.format("%s resigned. No more moves may be done on this game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(username, id, notification);
-        //set the game to not allow moves
     }
 
     private void move(String username, String authToken, int id, ChessMove move) throws IOException {
@@ -106,12 +121,16 @@ public class WebSocketHandler {
             var chessGame = gameData.game();
             chessGame.makeMove(move);
             var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
-            games.updateGame(updatedData);
-            var gameJson = gson.toJson(chessGame);
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameJson);
-            connections.broadcast(username, id, notification);
+            updateGame(id, updatedData, chessGame);
         } catch (DataAccessException | InvalidMoveException e) {
             throw new IOException(e);
         }
+    }
+
+    private void updateGame(int id, GameData updatedData, ChessGame chessGame) throws DataAccessException, IOException {
+        games.updateGame(updatedData);
+        var gameJson = gson.toJson(chessGame);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameJson);
+        connections.broadcast(null, id, notification);
     }
 }

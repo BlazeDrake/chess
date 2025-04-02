@@ -27,6 +27,8 @@ public class CommandEval {
     private int curId;
     private ArrayList<Integer> gameIDList;
 
+    private boolean observer;
+
     private Printer printer;
 
     private WebSocketFacade ws;
@@ -35,6 +37,7 @@ public class CommandEval {
         this.facade = facade;
         this.printer = new Printer();
         gameIDList = new ArrayList<>();
+        observer = false;
     }
 
     public void run() {
@@ -163,6 +166,7 @@ public class CommandEval {
                 facade.joinGame(new JoinGameRequest(authToken, colorStr, curId));
                 ws.joinGame(authToken, curId);
                 curState = State.Gameplay;
+                observer = false;
                 yield "now playing as " + colorStr + " in game " + curId;
             }
             case "observe" -> {
@@ -174,6 +178,7 @@ public class CommandEval {
 
                 curColor = ChessGame.TeamColor.WHITE;
                 curState = State.Gameplay;
+                observer = true;
                 yield "Now observing game " + curId;
             }
             case "logout" -> {
@@ -220,7 +225,9 @@ public class CommandEval {
                 yield "Successfully left game";
             }
             case "move" -> {
-                //FIXME: Make it so it doesn't work for observers with websocket!
+                if (observer) {
+                    throw new ResponseException(400, "Error: Observers can't make moves");
+                }
                 ChessPiece.PieceType promotion = null;
                 checkCount(args.length, 5, 6);
                 if (curColor != curGame.getTeamTurn()) {
@@ -249,14 +256,19 @@ public class CommandEval {
                 yield drawBoard(curGame, curColor, null);
             }
             case "resign" -> {
-                printer.printSubCommand("Are you sure? [y/n]");
-                String next = scanner.nextLine();
-                if ("y".equalsIgnoreCase(next)) {
-                    ws.resign(authToken, curId);
-                    yield "Successfully Resigned";
+                if (!observer) {
+                    printer.printSubCommand("Are you sure? [y/n]");
+                    String next = scanner.nextLine();
+                    if ("y".equalsIgnoreCase(next)) {
+                        ws.resign(authToken, curId);
+                        yield "Successfully Resigned";
+                    }
+                    else {
+                        yield "Cancelled Resignation";
+                    }
                 }
                 else {
-                    yield "Cancelled Resignation";
+                    throw new ResponseException(400, "Error: Observers can't resign");
                 }
             }
             case "highlight" -> {
@@ -379,6 +391,22 @@ public class CommandEval {
                 printRow(board, i, builder, 1, 0, highlight ? highlightedPos[i - 1] : null);
             }
             builder.append(WHITE_COLS);
+        }
+        switch (game.getCurState()) {
+            case IN_PROGRESS:
+                break;
+            case WHITE_WIN:
+                builder.append("\n");
+                builder.append("White player won");
+                break;
+            case BLACK_WIN:
+                builder.append("\n");
+                builder.append("Black player won");
+                break;
+            case STALEMATE:
+                builder.append("\n");
+                builder.append("Stalemate");
+                break;
         }
 
         return builder.toString();

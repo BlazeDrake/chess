@@ -22,6 +22,8 @@ public class ChessGame {
 
     private ChessPosition enPassantPos;
 
+    private GameState curState;
+
 
     private static final CheckCalculator[] CHECK_CALCULATORS = {
             new CheckCalculator(new BishopMovesCalculator(), List.of(
@@ -53,6 +55,8 @@ public class ChessGame {
         board.resetBoard();
 
         curPlayer = TeamColor.WHITE;
+
+        curState = GameState.IN_PROGRESS;
 
         //Get the kings
         whiteKing = board.getPiece(new ChessPosition(1, 5));
@@ -92,14 +96,6 @@ public class ChessGame {
     @Override
     public int hashCode() {
         return Objects.hash(board, curPlayer);
-    }
-
-    /**
-     * Enum identifying the 2 possible teams in a chess game
-     */
-    public enum TeamColor {
-        WHITE,
-        BLACK
     }
 
     private boolean isValidMove(ChessMove move) {
@@ -232,7 +228,10 @@ public class ChessGame {
         var startPos = move.getStartPosition();
         //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
         var possibleMoves = validMoves(startPos);
-        if (possibleMoves == null || !possibleMoves.contains(move)) {
+        if (curState != GameState.IN_PROGRESS) {
+            throw new InvalidMoveException("Game is already finished!");
+        }
+        else if (possibleMoves == null || !possibleMoves.contains(move)) {
             throw new InvalidMoveException("Invalid move: " + move.toString());
         }
         else if (curPlayer != board.getPiece(move.getStartPosition()).getTeamColor()) {
@@ -263,6 +262,18 @@ public class ChessGame {
 
             //Update the turn
             curPlayer = curPlayer == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+
+            //check if the game is over
+            if (isInCheck(TeamColor.WHITE)) {
+                setCurState(GameState.BLACK_WIN);
+            }
+            else if (isInCheck(TeamColor.BLACK)) {
+                setCurState(GameState.WHITE_WIN);
+            }
+            //only check next player, the outcome is the same regardless of team
+            else if (isInStalemate(curPlayer)) {
+                setCurState(GameState.STALEMATE);
+            }
         }
     }
 
@@ -391,4 +402,28 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    public GameState getCurState() {
+        return curState;
+    }
+
+    public void setCurState(GameState curState) {
+        this.curState = curState;
+    }
+
+    /**
+     * Enum identifying the 2 possible teams in a chess game
+     */
+    public enum TeamColor {
+        WHITE,
+        BLACK
+    }
+
+    public enum GameState {
+        IN_PROGRESS,
+        WHITE_WIN,
+        BLACK_WIN,
+        STALEMATE
+    }
+
 }
