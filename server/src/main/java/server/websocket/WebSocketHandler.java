@@ -49,7 +49,7 @@ public class WebSocketHandler {
                 case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameID());
                 case ClientMessage.ClientMessageType.RESIGN -> resign(username, msg.getAuthToken(), msg.getGameID());
                 case ClientMessage.ClientMessageType.MAKE_MOVE ->
-                        move(username, msg.getAuthToken(), msg.getGameID(), msg.getMove());
+                        move(username, msg.getAuthToken(), msg.getGameID(), msg.getMove(), session);
             }
         } catch (IOException e) {
             sendError(session);
@@ -112,24 +112,40 @@ public class WebSocketHandler {
                 chessGame.setCurState(ChessGame.GameState.WHITE_WIN);
             }
             var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
-            updateGame(id, updatedData, chessGame);
+            games.updateGame(updatedData);
         } catch (DataAccessException e) {
             throw new IOException(e);
         }
         var message = String.format("%s resigned. No more moves may be done on this game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
-        connections.broadcast(username, id, notification);
+        connections.broadcast(null, id, notification);
     }
 
-    private void move(String username, String authToken, int id, ChessMove move) throws IOException {
+    private void move(String username, String authToken, int id, ChessMove move, Session session) throws IOException {
+        String errorMsg = null;
         try {
             var gameData = games.getGame(new AuthData(authToken, username), id);
             var chessGame = gameData.game();
-            chessGame.makeMove(move);
-            var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
-            updateGame(id, updatedData, chessGame);
+
+            if (chessGame.getCurState() != ChessGame.GameState.IN_PROGRESS) {
+                errorMsg = "Error: Game is already finished";
+            }
+            else if (chessGame.getTeamTurn() == ChessGame.TeamColor.BLACK && username.equals(gameData.blackUsername()) ||
+                    chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE && username.equals(gameData.whiteUsername())) {
+                chessGame.makeMove(move);
+                var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
+                updateGame(id, updatedData, chessGame);
+            }
+            else {
+                errorMsg = "Error: It is either not your turn or you are an observer";
+            }
         } catch (DataAccessException | InvalidMoveException e) {
-            throw new IOException(e);
+            errorMsg = "Error: invalid move";
+        }
+
+        if (errorMsg != null) {
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMsg, null);
+            session.getRemote().sendString(gson.toJson(error));
         }
     }
 
