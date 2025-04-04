@@ -47,7 +47,8 @@ public class WebSocketHandler {
                 case ClientMessage.ClientMessageType.CONNECT ->
                         join(username, msg.getAuthToken(), msg.getGameID(), session);
                 case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameID());
-                case ClientMessage.ClientMessageType.RESIGN -> resign(username, msg.getAuthToken(), msg.getGameID());
+                case ClientMessage.ClientMessageType.RESIGN ->
+                        resign(username, msg.getAuthToken(), msg.getGameID(), session);
                 case ClientMessage.ClientMessageType.MAKE_MOVE ->
                         move(username, msg.getAuthToken(), msg.getGameID(), msg.getMove(), session);
             }
@@ -100,59 +101,67 @@ public class WebSocketHandler {
         }
     }
 
-    private void resign(String username, String authToken, int id) throws IOException {
+    private void resign(String username, String authToken, int id, Session session) throws IOException {
         //set the game to not allow moves
         try {
             var gameData = games.getGame(new AuthData(authToken, username), id);
             var chessGame = gameData.game();
-            if (username.equals(gameData.whiteUsername())) {
+            if (chessGame.getCurState() != ChessGame.GameState.IN_PROGRESS) {
+                throw new WebsocketException("Error: Game already completed");
+            }
+            else if (username.equals(gameData.whiteUsername())) {
                 chessGame.setCurState(ChessGame.GameState.BLACK_WIN);
             }
-            else {
+            else if (username.equals(gameData.blackUsername())) {
                 chessGame.setCurState(ChessGame.GameState.WHITE_WIN);
+            }
+            else {
+                throw new WebsocketException("Error: Observers can't resign!");
             }
             var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
             games.updateGame(updatedData);
+            var message = String.format("%s resigned. No more moves may be done on this game", username);
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
+            connections.broadcast(null, id, notification);
         } catch (DataAccessException e) {
             throw new IOException(e);
+        } catch (WebsocketException e) {
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage(), null);
+            session.getRemote().sendString(gson.toJson(error));
         }
-        var message = String.format("%s resigned. No more moves may be done on this game", username);
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
-        connections.broadcast(null, id, notification);
     }
 
     private void move(String username, String authToken, int id, ChessMove move, Session session) throws IOException {
-        String errorMsg = null;
         try {
             var gameData = games.getGame(new AuthData(authToken, username), id);
             var chessGame = gameData.game();
 
             if (chessGame.getCurState() != ChessGame.GameState.IN_PROGRESS) {
-                errorMsg = "Error: Game is already finished";
+                throw new WebsocketException("Error: Game is already finished");
             }
             else if (chessGame.getTeamTurn() == ChessGame.TeamColor.BLACK && username.equals(gameData.blackUsername()) ||
                     chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE && username.equals(gameData.whiteUsername())) {
                 chessGame.makeMove(move);
                 var updatedData = new GameData(id, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
-                updateGame(id, updatedData, chessGame);
+                games.updateGame(updatedData);
+                var load = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, chessGame);
+                connections.broadcast(null, id, load);
+
+                var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        username + " performed move " + move, null);
+                connections.broadcast(username, id, notification);
             }
             else {
-                errorMsg = "Error: It is either not your turn or you are an observer";
+                throw new WebsocketException("Error: It is either not your turn or you are an observer");
             }
         } catch (DataAccessException | InvalidMoveException e) {
-            errorMsg = "Error: invalid move";
-        }
-
-        if (errorMsg != null) {
-            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMsg, null);
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: Invalid move", null);
+            session.getRemote().sendString(gson.toJson(error));
+        } catch (WebsocketException e) {
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage(), null);
             session.getRemote().sendString(gson.toJson(error));
         }
-    }
-
-    private void updateGame(int id, GameData updatedData, ChessGame chessGame) throws DataAccessException, IOException {
-        games.updateGame(updatedData);
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, chessGame);
-        connections.broadcast(null, id, notification);
     }
 
     private void sendError(Session session) throws IOException {
