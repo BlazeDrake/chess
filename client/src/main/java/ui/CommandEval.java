@@ -261,7 +261,7 @@ public class CommandEval {
                     String next = scanner.nextLine();
                     if ("y".equalsIgnoreCase(next)) {
                         ws.resign(authToken, curId);
-                        yield "Successfully Resigned";
+                        yield "Resignation Request Sent";
                     }
                     else {
                         yield "Cancelled Resignation";
@@ -363,8 +363,8 @@ public class CommandEval {
         };
     }
 
-    public void loadGame(String json) {
-        curGame = new Gson().fromJson(json, ChessGame.class);
+    public void loadGame(ChessGame game) {
+        curGame = game;
         printer.notify(drawBoard(curGame, curColor, null));
     }
 

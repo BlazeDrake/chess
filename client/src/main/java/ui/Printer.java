@@ -24,7 +24,8 @@ public class Printer {
     }
 
     public void printError(String err) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + err);
+        System.out.println("\n" + EscapeSequences.SET_TEXT_COLOR_RED + err);
+        //printName();
     }
 
     public void printResponse(String response) {

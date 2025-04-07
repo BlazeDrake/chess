@@ -39,8 +39,8 @@ public class WebSocketFacade extends Endpoint {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
                     switch (notification.getServerMessageType()) {
                         case NOTIFICATION -> printer.notify(notification.getMessage());
-                        case LOAD_GAME -> eval.loadGame(notification.getMessage());
-                        default -> printer.printError(notification.getMessage());
+                        case LOAD_GAME -> eval.loadGame(notification.getGame());
+                        default -> printer.printError(notification.getErrorMessage());
                     }
                 }
             });
