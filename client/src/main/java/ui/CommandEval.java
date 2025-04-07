@@ -167,7 +167,7 @@ public class CommandEval {
                 ws.joinGame(authToken, curId);
                 curState = State.Gameplay;
                 observer = false;
-                yield "now playing as " + colorStr + " in game " + curId;
+                yield "now playing as " + colorStr + " in game " + args[1];
             }
             case "observe" -> {
                 checkCount(args.length, 2);
@@ -179,7 +179,7 @@ public class CommandEval {
                 curColor = ChessGame.TeamColor.WHITE;
                 curState = State.Gameplay;
                 observer = true;
-                yield "Now observing game " + curId;
+                yield "Now observing game " + args[1];
             }
             case "logout" -> {
                 facade.logout(authToken);
@@ -245,14 +245,18 @@ public class CommandEval {
                                 throw new ResponseException(400, "Error: Invalid promotion piece type; must be knight, rook, bishop, or queen");
                     };
                 }
-                var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
-                var endPos = new ChessPosition(Integer.parseInt(args[4]), colToInt(args[3]));
                 try {
+                    var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
+                    var endPos = new ChessPosition(Integer.parseInt(args[4]), colToInt(args[3]));
                     var move = new ChessMove(startPos, endPos, promotion);
                     curGame.makeMove(move);
                     ws.move(authToken, curId, move);
                 } catch (InvalidMoveException ex) {
                     throw new ResponseException(400, ex.getMessage());
+                } catch (NumberFormatException e) {
+                    throw new ResponseException(400,
+                            "Error: Position selected with format <row> <column>.\n" +
+                                    "Should be selected with format <column> <row> (ex. a 5)");
                 }
                 yield drawBoard(curGame, curColor, null);
             }
@@ -274,17 +278,23 @@ public class CommandEval {
             }
             case "highlight" -> {
                 checkCount(args.length, 3);
-                boolean[][] highlightedPos = new boolean[8][8];
-                var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
-                var validMoves = curGame.validMoves(startPos);
-                if (validMoves != null) {
-                    for (var move : validMoves) {
-                        var pos = move.getEndPosition();
-                        highlightedPos[pos.getRow() - 1][pos.getColumn() - 1] = true;
+                try {
+                    boolean[][] highlightedPos = new boolean[8][8];
+                    var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
+                    var validMoves = curGame.validMoves(startPos);
+                    if (validMoves != null) {
+                        for (var move : validMoves) {
+                            var pos = move.getEndPosition();
+                            highlightedPos[pos.getRow() - 1][pos.getColumn() - 1] = true;
+                        }
                     }
-                }
 
-                yield drawBoard(curGame, curColor, highlightedPos);
+                    yield drawBoard(curGame, curColor, highlightedPos);
+                } catch (NumberFormatException e) {
+                    throw new ResponseException(400,
+                            "Error: Position selected with format <row> <column>.\n" +
+                                    "Should be selected with format <column> <row> (ex. a 5)");
+                }
             }
             case "logout" -> throw new ResponseException(400, "Error: Must leave game out before logging out");
             case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");

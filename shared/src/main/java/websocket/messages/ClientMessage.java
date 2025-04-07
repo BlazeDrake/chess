@@ -12,9 +12,10 @@ import java.util.Objects;
  */
 public class ClientMessage {
     ClientMessageType commandType;
+
     private String authToken;
     private int gameID;
-    ChessMove move;
+    private ChessMove move;
 
     public enum ClientMessageType {
         CONNECT,

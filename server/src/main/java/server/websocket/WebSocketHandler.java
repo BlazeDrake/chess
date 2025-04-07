@@ -46,6 +46,7 @@ public class WebSocketHandler {
             switch (type) {
                 case ClientMessage.ClientMessageType.CONNECT ->
                         join(username, msg.getAuthToken(), msg.getGameID(), session);
+
                 case ClientMessage.ClientMessageType.LEAVE -> leave(username, msg.getAuthToken(), msg.getGameID());
                 case ClientMessage.ClientMessageType.RESIGN ->
                         resign(username, msg.getAuthToken(), msg.getGameID(), session);
@@ -70,6 +71,23 @@ public class WebSocketHandler {
         //finish message
         connections.add(username, id, session);
         var message = String.format("%s connected", username);
+
+        try {
+            var game = games.getGame(new AuthData(authToken, username), id);
+            if (username.equals(game.whiteUsername())) {
+                message += " as the white player";
+            }
+            else if (username.equals(game.blackUsername())) {
+                message += " as the black player";
+            }
+            else {
+                message += " as an observer";
+            }
+
+        } catch (DataAccessException e) {
+            throw new IOException(e);
+        }
+
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message, null);
         connections.broadcast(username, id, notification);
 
