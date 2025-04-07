@@ -107,7 +107,7 @@ public class ChessGame {
         }
         //temporarily move the piece, then test for check
         var baseOldPiece = board.getPiece(move.getEndPosition());
-        var tempTestPiece = board.movePiece(move);
+        var tempTestPiece = board.movePiece(new ChessMove(move.getStartPosition(), move.getEndPosition(), null));
         if (tempTestPiece.getPieceType() == ChessPiece.PieceType.KING) {
             if (tempTestPiece.getTeamColor() == TeamColor.WHITE) {
                 whiteKing = tempTestPiece;
@@ -228,6 +228,7 @@ public class ChessGame {
         var startPos = move.getStartPosition();
         //run isValidMove on the move, then tests if it's the piece's teams turn. Moves the piece to endPos if both are true
         var possibleMoves = validMoves(startPos);
+        // var testMove = new ChessMove(move.getStartPosition(), move.getEndPosition(), null);
         if (curState != GameState.IN_PROGRESS) {
             throw new InvalidMoveException("Game is already finished!");
         }
@@ -264,10 +265,10 @@ public class ChessGame {
             curPlayer = curPlayer == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
 
             //check if the game is over
-            if (isInCheck(TeamColor.WHITE)) {
+            if (isInCheckmate(TeamColor.WHITE)) {
                 setCurState(GameState.BLACK_WIN);
             }
-            else if (isInCheck(TeamColor.BLACK)) {
+            else if (isInCheckmate(TeamColor.BLACK)) {
                 setCurState(GameState.WHITE_WIN);
             }
             //only check next player, the outcome is the same regardless of team
@@ -331,6 +332,7 @@ public class ChessGame {
     }
 
     private boolean teamCanMove(TeamColor teamColor) {
+
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
                 var testPos = new ChessPosition(i, j);
