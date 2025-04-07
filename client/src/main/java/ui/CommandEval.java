@@ -62,6 +62,9 @@ public class CommandEval {
                 printer.printResponse(command);
             } catch (ResponseException ex) {
                 handleError(ex);
+            } catch (NumberFormatException exception) {
+                handleError(new ResponseException(400,
+                        "Error: Parameter that should be a number was not one. Use help to see parameters for commands!"));
             }
         }
         while (curState != State.LoggedOut || !"quit".equals(input));
@@ -194,7 +197,7 @@ public class CommandEval {
         };
     }
 
-    private String gameplayCommand(String input, Scanner scanner) throws ResponseException {
+    private String gameplayCommand(String input, Scanner scanner) throws ResponseException, NumberFormatException {
         String[] args = input.split(" ");
         return switch (args[0]) {
             case "help" -> "Gameplay commands: \n" +
@@ -253,10 +256,6 @@ public class CommandEval {
                     ws.move(authToken, curId, move);
                 } catch (InvalidMoveException ex) {
                     throw new ResponseException(400, ex.getMessage());
-                } catch (NumberFormatException e) {
-                    throw new ResponseException(400,
-                            "Error: Position selected with format <row> <column>.\n" +
-                                    "Should be selected with format <column> <row> (ex. a 5)");
                 }
                 yield drawBoard(curGame, curColor, null);
             }
@@ -278,23 +277,17 @@ public class CommandEval {
             }
             case "highlight" -> {
                 checkCount(args.length, 3);
-                try {
-                    boolean[][] highlightedPos = new boolean[8][8];
-                    var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
-                    var validMoves = curGame.validMoves(startPos);
-                    if (validMoves != null) {
-                        for (var move : validMoves) {
-                            var pos = move.getEndPosition();
-                            highlightedPos[pos.getRow() - 1][pos.getColumn() - 1] = true;
-                        }
+                boolean[][] highlightedPos = new boolean[8][8];
+                var startPos = new ChessPosition(Integer.parseInt(args[2]), colToInt(args[1]));
+                var validMoves = curGame.validMoves(startPos);
+                if (validMoves != null) {
+                    for (var move : validMoves) {
+                        var pos = move.getEndPosition();
+                        highlightedPos[pos.getRow() - 1][pos.getColumn() - 1] = true;
                     }
-
-                    yield drawBoard(curGame, curColor, highlightedPos);
-                } catch (NumberFormatException e) {
-                    throw new ResponseException(400,
-                            "Error: Position selected with format <row> <column>.\n" +
-                                    "Should be selected with format <column> <row> (ex. a 5)");
                 }
+                yield drawBoard(curGame, curColor, highlightedPos);
+
             }
             case "logout" -> throw new ResponseException(400, "Error: Must leave game out before logging out");
             case "quit" -> throw new ResponseException(400, "Error: Must log out before quitting");
