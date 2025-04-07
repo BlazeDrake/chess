@@ -208,7 +208,8 @@ public class CommandEval {
                             "Leaves the current game that's being played or observed",
                             "leave") +
                     commandInfo("move",
-                            "Moves one of your pieces if it is your turn. Promotion is only used if the piece is a pawn and moves to the end of the board.",
+                            "Moves one of your pieces if it is your turn.\n" +
+                                    "Promotion is only used if the piece is a pawn and moves to the end of the board.",
                             "move <start column> <start row> <end column> <end row> [promotion: KNIGHT|BISHOP|ROOK|QUEEN]") +
                     commandInfo("resign",
                             "Forfeits the current game. Does not exit it.",

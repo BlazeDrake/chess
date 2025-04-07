@@ -14,7 +14,6 @@ public class Printer {
     }
 
     public void notify(String notification) {
-        //FIXME: Make it not interfere with username (perhaps by adding a newline, then reprinting?)
         System.out.println("\n" + EscapeSequences.SET_TEXT_COLOR_GREEN + notification);
         printName();
     }
