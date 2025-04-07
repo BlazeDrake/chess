@@ -14,6 +14,7 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.messages.ClientMessage;
 import websocket.messages.ServerMessage;
 
+import javax.management.Notification;
 import java.io.IOException;
 
 
@@ -168,6 +169,17 @@ public class WebSocketHandler {
                 var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         username + " performed move " + move, null);
                 connections.broadcast(username, id, notification);
+
+                if (chessGame.isInCheck(ChessGame.TeamColor.WHITE)) {
+                    var checkNotif = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                            "White is in check!", null);
+                    connections.broadcast(null, id, checkNotif);
+                }
+                else if (chessGame.isInCheck(ChessGame.TeamColor.BLACK)) {
+                    var checkNotif = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                            "Black is in check!", null);
+                    connections.broadcast(null, id, checkNotif);
+                }
             }
             else {
                 throw new WebsocketException("Error: It is either not your turn or you are an observer");
